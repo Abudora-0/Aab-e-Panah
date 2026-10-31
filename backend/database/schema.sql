@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS camps (
+    camp_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    district VARCHAR(100) NOT NULL,
+    capacity INT NOT NULL,
+    current_occupancy INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

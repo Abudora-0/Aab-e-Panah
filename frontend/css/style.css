@@ -1,0 +1,45 @@
+/* This file styles the dummy camp form. */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 30px;
+    color: #222222;
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+form {
+    display: grid;
+    gap: 8px;
+    max-width: 350px;
+}
+
+input,
+button {
+    padding: 8px;
+    font-size: 1rem;
+}
+
+button {
+    margin-top: 8px;
+}
+
+table {
+    border-collapse: collapse;
+    margin-top: 25px;
+    width: 100%;
+}
+
+th,
+td {
+    border: 1px solid #cccccc;
+    padding: 8px;
+    text-align: left;
+}
+
+#message {
+    min-height: 20px;
+}

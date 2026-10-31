@@ -2,9 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aab-e-Panah</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <h1>Aab-e-Panah</h1>
+    <main>
+        <p id="status">Checking database...</p>
+        <h1>Aab-e-Panah</h1>
+
+        <form id="camp-form">
+            <label for="camp-name">Camp name</label>
+            <input id="camp-name" name="name" type="text" required>
+
+            <label for="district">District</label>
+            <input id="district" name="district" type="text" required>
+
+            <label for="capacity">Capacity</label>
+            <input id="capacity" name="capacity" type="number" min="1" step="1" required>
+
+            <button type="submit">Add Camp</button>
+        </form>
+
+        <p id="message"></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>District</th>
+                    <th>Capacity</th>
+                    <th>Current occupancy</th>
+                </tr>
+            </thead>
+            <tbody id="camp-list"></tbody>
+        </table>
+    </main>
+    <script src="/static/js/dummy_form.js"></script>
 </body>
 </html>
