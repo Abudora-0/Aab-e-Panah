@@ -1,0 +1,14 @@
+# This file holds names for audit actions.
+
+
+class ActionNames:
+    ADD_CAMP = "ADD_CAMP"
+    UPDATE_CAMP = "UPDATE_CAMP"
+    ADD_ROAD = "ADD_ROAD"
+    BLOCK_ROAD = "BLOCK_ROAD"
+    UNBLOCK_ROAD = "UNBLOCK_ROAD"
+    ADD_REQUEST = "ADD_REQUEST"
+    SERVE_REQUEST = "SERVE_REQUEST"
+    UNDO_ACTION = "UNDO_ACTION"
+    RUN_ROUTE = "RUN_ROUTE"
+    SYSTEM_ERROR = "SYSTEM_ERROR"
