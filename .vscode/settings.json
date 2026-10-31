@@ -1,5 +1,3 @@
 {
-    "chat.hookFilesLocations": {
-        "git.addAICoAuthor": false
-    }
+    "git.addAICoAuthor": "off"
 }
