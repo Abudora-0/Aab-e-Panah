@@ -1,9 +1,9 @@
-// This file handles the dummy camp form.
+// This file handles the camp form.
 
-const statusLine = document.getElementById("status");
 const campForm = document.getElementById("camp-form");
-const messageLine = document.getElementById("message");
+const campMessage = document.getElementById("message");
 const campList = document.getElementById("camp-list");
+const statusLine = document.getElementById("status");
 
 async function updateHealth() {
     try {
@@ -21,16 +21,24 @@ async function updateHealth() {
 }
 
 function showCamps(camps) {
-    campList.innerHTML = "";
+    campList.textContent = "";
 
     for (const camp of camps) {
         const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${camp.name}</td>
-            <td>${camp.district}</td>
-            <td>${camp.capacity}</td>
-            <td>${camp.current_occupancy}</td>
-        `;
+        const nameCell = document.createElement("td");
+        const districtCell = document.createElement("td");
+        const capacityCell = document.createElement("td");
+        const occupancyCell = document.createElement("td");
+
+        nameCell.textContent = camp.name;
+        districtCell.textContent = camp.district;
+        capacityCell.textContent = camp.capacity;
+        occupancyCell.textContent = camp.current_occupancy;
+
+        row.appendChild(nameCell);
+        row.appendChild(districtCell);
+        row.appendChild(capacityCell);
+        row.appendChild(occupancyCell);
         campList.appendChild(row);
     }
 }
@@ -41,13 +49,13 @@ async function loadCamps() {
         const data = await response.json();
 
         if (!response.ok) {
-            messageLine.textContent = data.error;
+            campMessage.textContent = data.error;
             return;
         }
 
         showCamps(data);
     } catch (error) {
-        messageLine.textContent = "Could not load camps";
+        campMessage.textContent = "Could not load camps";
     }
 }
 
@@ -72,15 +80,15 @@ campForm.addEventListener("submit", async function (event) {
         const data = await response.json();
 
         if (!response.ok) {
-            messageLine.textContent = data.error;
+            campMessage.textContent = data.error;
             return;
         }
 
-        messageLine.textContent = "Camp added successfully";
+        campMessage.textContent = "Camp added successfully";
         campForm.reset();
         await loadCamps();
     } catch (error) {
-        messageLine.textContent = "Could not add camp";
+        campMessage.textContent = "Could not add camp";
     }
 });
 

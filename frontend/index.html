@@ -37,7 +37,59 @@
             </thead>
             <tbody id="camp-list"></tbody>
         </table>
+
+        <section>
+            <h2>Aid Requests</h2>
+            <form id="request-form">
+                <label for="area-name">Area name</label>
+                <input id="area-name" name="area_name" type="text" required>
+
+                <label for="needs">Needs</label>
+                <input id="needs" name="needs" type="text" required>
+
+                <label for="severity">Severity</label>
+                <select id="severity" name="severity">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+
+                <button type="submit">Add Request</button>
+            </form>
+            <button id="serve-request" type="button">Serve next request</button>
+            <p id="request-message"></p>
+
+            <h3>Waiting requests</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>Area</th>
+                        <th>Needs</th>
+                        <th>Severity</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody id="request-list"></tbody>
+            </table>
+
+            <h3>Recently served requests</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Area</th>
+                        <th>Needs</th>
+                        <th>Severity</th>
+                        <th>Served time</th>
+                    </tr>
+                </thead>
+                <tbody id="served-list"></tbody>
+            </table>
+        </section>
     </main>
-    <script src="/static/js/dummy_form.js"></script>
+    <script src="/static/js/camps.js"></script>
+    <script src="/static/js/aid_requests.js"></script>
 </body>
 </html>
