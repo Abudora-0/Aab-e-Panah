@@ -12,14 +12,13 @@ BACKUP_COUNT = 3
 
 
 def get_logger(name):
-    """Return a configured application logger."""
     LOG_FOLDER.mkdir(parents=True, exist_ok=True)
 
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
     logger.propagate = False
 
-    if getattr(logger, "_aab_configured", False):
+    if logger.handlers:
         return logger
 
     formatter = logging.Formatter(LOG_FORMAT)
@@ -49,6 +48,4 @@ def get_logger(name):
     logger.addHandler(app_handler)
     logger.addHandler(error_handler)
     logger.addHandler(console_handler)
-    logger._aab_configured = True
-
     return logger
