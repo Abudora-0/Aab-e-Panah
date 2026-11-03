@@ -1,4 +1,5 @@
 DELETE FROM camps;
+DELETE FROM aid_requests;
 
 INSERT INTO camps (name, district, capacity) VALUES
 ('Dadu Relief Camp', 'Dadu', 500);
@@ -14,3 +15,18 @@ INSERT INTO camps (name, district, capacity) VALUES
 
 INSERT INTO camps (name, district, capacity) VALUES
 ('Charsadda Relief Centre', 'Charsadda', 600);
+
+INSERT INTO aid_requests (area_name, needs, severity) VALUES
+('Mehar', 'water', 5);
+
+INSERT INTO aid_requests (area_name, needs, severity) VALUES
+('Thul', 'food', 4);
+
+INSERT INTO aid_requests (area_name, needs, severity) VALUES
+('Nowshera Village', 'tents', 3);
+
+INSERT INTO aid_requests (area_name, needs, severity) VALUES
+('Rajanpur East', 'medicine', 5);
+
+INSERT INTO aid_requests (area_name, needs, severity) VALUES
+('Charsadda Lowland', 'boats', 4);
