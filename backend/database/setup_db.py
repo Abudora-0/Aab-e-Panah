@@ -42,9 +42,15 @@ def run_sql_file(file_name):
 
 def main():
     try:
-        print("Creating camps table...")
+        print("Warning: setup will create tables and clear camps and aid requests.")
+        answer = input("Type YES to continue: ")
+        if answer != "YES":
+            print("Setup stopped. The database was not changed.")
+            return
+
+        print("Creating tables...")
         run_sql_file("schema.sql")
-        print("Camps table is ready.")
+        print("Tables are ready.")
 
         print("Loading sample camps...")
         run_sql_file("sample_data.sql")
