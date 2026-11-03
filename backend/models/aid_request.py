@@ -9,9 +9,12 @@ class AidRequest:
         needs,
         severity,
         created_at,
+        status="WAITING",
     ):
         self.request_id = request_id
         self.area_name = area_name
         self.needs = needs
         self.severity = severity
         self.created_at = created_at
+        self.status = status
+        self.served_at = None
