@@ -43,3 +43,11 @@ td {
 #message {
     min-height: 20px;
 }
+
+section {
+    margin-top: 35px;
+}
+
+h3 {
+    margin-top: 25px;
+}
