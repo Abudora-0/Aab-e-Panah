@@ -1,6 +1,7 @@
 # This file holds the audit logger.
 
 import logging
+from datetime import datetime
 from pathlib import Path
 
 
@@ -10,22 +11,28 @@ TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class AuditLogger:
-    def __init__(self, actor="admin"):
+    def __init__(self, actor="admin", log_file=None):
         LOG_FOLDER.mkdir(parents=True, exist_ok=True)
         self.default_actor = actor
         self.recent_entries = []
-        self.logger = logging.getLogger("aab.audit")
+        if log_file is None:
+            log_file = LOG_FOLDER / "audit.log"
+        else:
+            log_file = Path(log_file)
+            log_file.parent.mkdir(parents=True, exist_ok=True)
+
+        logger_name = "aab.audit." + str(log_file)
+        self.logger = logging.getLogger(logger_name)
         self.logger.setLevel(logging.INFO)
         self.logger.propagate = False
 
-        if not getattr(self.logger, "_aab_audit_configured", False):
+        if not self.logger.handlers:
             handler = logging.FileHandler(
-                LOG_FOLDER / "audit.log",
+                log_file,
                 encoding="utf-8",
             )
             handler.setFormatter(logging.Formatter(AUDIT_FORMAT))
             self.logger.addHandler(handler)
-            self.logger._aab_audit_configured = True
 
     def _add_entry(self, actor, action, target, details, result):
         entry = {
@@ -48,8 +55,6 @@ class AuditLogger:
         self.logger.info(line)
 
     def _current_time(self):
-        from datetime import datetime
-
         return datetime.now().strftime(TIME_FORMAT)
 
     def log_action(
