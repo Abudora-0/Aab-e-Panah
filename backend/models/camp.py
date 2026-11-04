@@ -11,12 +11,14 @@ class Camp:
         district,
         capacity,
         current_occupancy=0,
+        created_at=None,
     ):
         self.camp_id = camp_id
         self.name = name
         self.district = district
         self.capacity = capacity
         self.current_occupancy = current_occupancy
+        self.created_at = created_at
         self.supplies = LinkedList()
 
     def add_supply(self, batch):
