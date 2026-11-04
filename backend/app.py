@@ -6,16 +6,22 @@ import mysql.connector
 from flask import Flask, jsonify, request, send_from_directory
 
 from backend.database.db_connection import get_connection, test_connection
+from backend.database import camp_repository
 from backend.database import request_repository
 from backend.logging_tools.action_names import ActionNames
 from backend.logging_tools.app_logger import get_logger
 from backend.logging_tools.audit_logger import AuditLogger
 from backend.models.aid_request import AidRequest
 from backend.services.request_service import RequestService
+from backend.services.camp_service import CampService
 
 
 PROJECT_FOLDER = Path(__file__).resolve().parents[1]
 FRONTEND_FOLDER = PROJECT_FOLDER / "frontend"
+AREA_NAME_MAX = 100
+NEEDS_MAX = 255
+CAMP_NAME_MAX = 100
+DISTRICT_MAX = 100
 
 app = Flask(__name__, static_folder=None)
 logger = get_logger("app")
@@ -25,30 +31,35 @@ request_service = RequestService(audit_logger)
 
 def camp_to_dict(camp):
     return {
-        "camp_id": camp[0],
-        "name": camp[1],
-        "district": camp[2],
-        "capacity": camp[3],
-        "current_occupancy": camp[4],
-        "created_at": camp[5].isoformat() if camp[5] else None,
+        "camp_id": camp.camp_id,
+        "name": camp.name,
+        "district": camp.district,
+        "capacity": camp.capacity,
+        "current_occupancy": camp.current_occupancy,
+        "created_at": (
+            camp.created_at.isoformat()
+            if hasattr(camp.created_at, "isoformat")
+            else camp.created_at
+        ),
+        "free_space": camp.free_space(),
     }
 
 
-def request_to_dict(request, position=None):
+def request_to_dict(aid_request, position=None):
     data = {
-        "request_id": request.request_id,
-        "area_name": request.area_name,
-        "needs": request.needs,
-        "severity": request.severity,
-        "status": request.status,
-        "created_at": request.created_at,
+        "request_id": aid_request.request_id,
+        "area_name": aid_request.area_name,
+        "needs": aid_request.needs,
+        "severity": aid_request.severity,
+        "status": aid_request.status,
+        "created_at": aid_request.created_at,
     }
 
     if position is not None:
         data["position"] = position
 
-    if request.served_at is not None:
-        data["served_at"] = request.served_at
+    if aid_request.served_at is not None:
+        data["served_at"] = aid_request.served_at
 
     return data
 
@@ -71,18 +82,8 @@ def health():
 
 @app.route("/api/camps")
 def get_camps():
-    connection = None
-    cursor = None
-
     try:
-        connection = get_connection()
-        cursor = connection.cursor()
-        cursor.execute(
-            "SELECT camp_id, name, district, capacity, "
-            "current_occupancy, created_at "
-            "FROM camps ORDER BY created_at DESC, camp_id DESC"
-        )
-        camps = cursor.fetchall()
+        camps = camp_repository.load_all_camps()
         logger.info("Loaded %s camps", len(camps))
         return jsonify([camp_to_dict(camp) for camp in camps])
     except mysql.connector.Error as error:
@@ -94,11 +95,6 @@ def get_camps():
             str(error),
         )
         return jsonify({"error": "Could not load camps"}), 500
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if connection is not None:
-            connection.close()
 
 
 @app.route("/api/camps", methods=["POST"])
@@ -117,6 +113,16 @@ def add_camp():
         reason = "Name and district are required"
         audit_logger.log_error("admin", ActionNames.ADD_CAMP, "camp", reason)
         return jsonify({"error": reason}), 400
+
+    length_checks = [
+        (name, CAMP_NAME_MAX, "Camp name", ActionNames.ADD_CAMP),
+        (district, DISTRICT_MAX, "District", ActionNames.ADD_CAMP),
+    ]
+    for value, maximum, label, action in length_checks:
+        if len(value) > maximum:
+            reason = label + " must be " + str(maximum) + " characters or less"
+            audit_logger.log_error("admin", action, "camp", reason)
+            return jsonify({"error": reason}), 400
 
     if isinstance(capacity_value, bool):
         capacity_is_valid = False
@@ -191,8 +197,8 @@ def get_requests():
     request_data = []
     position = 1
 
-    for request in waiting:
-        request_data.append(request_to_dict(request, position))
+    for aid_request in waiting:
+        request_data.append(request_to_dict(aid_request, position))
         position += 1
 
     return jsonify(
@@ -217,6 +223,16 @@ def add_request():
 
     if not area_name or not needs:
         reason = "Area name and needs are required"
+        audit_logger.log_error("admin", ActionNames.ADD_REQUEST, "request", reason)
+        return jsonify({"error": reason}), 400
+
+    if len(area_name) > AREA_NAME_MAX:
+        reason = "Area name must be 100 characters or less"
+        audit_logger.log_error("admin", ActionNames.ADD_REQUEST, "request", reason)
+        return jsonify({"error": reason}), 400
+
+    if len(needs) > NEEDS_MAX:
+        reason = "Needs must be 255 characters or less"
         audit_logger.log_error("admin", ActionNames.ADD_REQUEST, "request", reason)
         return jsonify({"error": reason}), 400
 
@@ -256,6 +272,8 @@ def serve_next_request():
     request_item = request_service.serve_next()
 
     if request_item is None:
+        if request_service.last_error is not None:
+            return jsonify({"error": "Could not serve request"}), 500
         return jsonify({"error": "No requests are waiting"}), 404
 
     return jsonify(request_to_dict(request_item))
@@ -265,7 +283,7 @@ def serve_next_request():
 def get_served_requests():
     try:
         served = request_repository.load_recent_served(10)
-        return jsonify([request_to_dict(request) for request in served])
+        return jsonify([request_to_dict(aid_request) for aid_request in served])
     except mysql.connector.Error as error:
         logger.error("Could not load served requests: %s", error)
         audit_logger.log_error(
@@ -275,6 +293,79 @@ def get_served_requests():
             str(error),
         )
         return jsonify({"error": "Could not load served requests"}), 500
+
+
+def _camp_service():
+    return CampService(camp_repository.load_all_camps(), audit_logger)
+
+
+@app.route("/api/camps/sorted")
+def get_sorted_camps():
+    field = request.args.get("sort", "name")
+    order = request.args.get("order", "asc")
+    algorithm = request.args.get("algorithm", "merge")
+    if field not in ("name", "capacity", "free_space"):
+        return jsonify({"error": "Invalid sort field"}), 400
+    if order not in ("asc", "desc"):
+        return jsonify({"error": "Invalid sort order"}), 400
+    if algorithm not in ("merge", "quick"):
+        return jsonify({"error": "Invalid sorting algorithm"}), 400
+    try:
+        camps, milliseconds = _camp_service().sort_camps(
+            field,
+            order,
+            algorithm,
+        )
+        return jsonify(
+            {
+                "camps": [camp_to_dict(camp) for camp in camps],
+                "algorithm": algorithm,
+                "milliseconds": milliseconds,
+            }
+        )
+    except mysql.connector.Error as error:
+        logger.error("Could not sort camps: %s", error)
+        return jsonify({"error": "Could not load camps"}), 500
+
+
+@app.route("/api/camps/find")
+def find_camp():
+    free_space = request.args.get("free_space")
+    name = request.args.get("name")
+    service = None
+    try:
+        service = _camp_service()
+        if free_space is not None:
+            try:
+                minimum = int(free_space)
+            except (TypeError, ValueError):
+                return jsonify({"error": "free_space must be a whole number"}), 400
+            if minimum < 1:
+                return jsonify({"error": "free_space must be at least 1"}), 400
+            camp = service.find_camp_with_free_space(minimum)
+        elif name is not None and name.strip():
+            camp = service.find_camp_by_name(name.strip())
+        else:
+            return jsonify({"error": "Provide free_space or name"}), 400
+        if camp is None:
+            return jsonify({"error": "No camp found"}), 404
+        return jsonify(camp_to_dict(camp))
+    except mysql.connector.Error as error:
+        logger.error("Could not find camp: %s", error)
+        return jsonify({"error": "Could not load camps"}), 500
+
+
+@app.route("/api/requests/ranked")
+def get_ranked_requests():
+    ranked = request_service.ranked_requests()
+    request_data = []
+    rank = 1
+    for aid_request in ranked:
+        data = request_to_dict(aid_request)
+        data["rank"] = rank
+        request_data.append(data)
+        rank += 1
+    return jsonify({"requests": request_data})
 
 
 if __name__ == "__main__":
