@@ -13,10 +13,10 @@
 
         <form id="camp-form">
             <label for="camp-name">Camp name</label>
-            <input id="camp-name" name="name" type="text" required>
+            <input id="camp-name" name="name" type="text" maxlength="100" required>
 
             <label for="district">District</label>
-            <input id="district" name="district" type="text" required>
+            <input id="district" name="district" type="text" maxlength="100" required>
 
             <label for="capacity">Capacity</label>
             <input id="capacity" name="capacity" type="number" min="1" step="1" required>
@@ -26,6 +26,26 @@
 
         <p id="message"></p>
 
+        <div class="control-bar">
+            <label for="camp-sort">Sort by</label>
+            <select id="camp-sort">
+                <option value="name">Name</option>
+                <option value="capacity">Capacity</option>
+                <option value="free_space">Free space</option>
+            </select>
+            <select id="camp-order">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+            <select id="camp-algorithm">
+                <option value="merge">Merge sort</option>
+                <option value="quick">Quick sort</option>
+            </select>
+            <button id="sort-camps" type="button">Sort</button>
+            <button id="reset-camps" type="button">Reset</button>
+        </div>
+        <p id="camp-sort-message"></p>
+
         <table>
             <thead>
                 <tr>
@@ -33,19 +53,31 @@
                     <th>District</th>
                     <th>Capacity</th>
                     <th>Current occupancy</th>
+                    <th>Free space</th>
                 </tr>
             </thead>
             <tbody id="camp-list"></tbody>
         </table>
+        <form id="free-space-form">
+            <label for="minimum-free-space">Find a camp with at least N free places</label>
+            <input id="minimum-free-space" type="number" min="1" required>
+            <button type="submit">Find camp</button>
+        </form>
+        <form id="camp-name-search-form">
+            <label for="camp-name-search">Find a camp by name</label>
+            <input id="camp-name-search" type="text" required>
+            <button type="submit">Find camp</button>
+        </form>
+        <p id="camp-find-message"></p>
 
         <section>
             <h2>Aid Requests</h2>
             <form id="request-form">
                 <label for="area-name">Area name</label>
-                <input id="area-name" name="area_name" type="text" required>
+                <input id="area-name" name="area_name" type="text" maxlength="100" required>
 
                 <label for="needs">Needs</label>
-                <input id="needs" name="needs" type="text" required>
+                <input id="needs" name="needs" type="text" maxlength="255" required>
 
                 <label for="severity">Severity</label>
                 <select id="severity" name="severity">
@@ -73,6 +105,20 @@
                     </tr>
                 </thead>
                 <tbody id="request-list"></tbody>
+            </table>
+
+            <h3>Most urgent first</h3>
+            <p>Ranked by severity (counting sort). Serving still follows arrival order.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Area</th>
+                        <th>Needs</th>
+                        <th>Severity</th>
+                    </tr>
+                </thead>
+                <tbody id="ranked-request-list"></tbody>
             </table>
 
             <h3>Recently served requests</h3>
