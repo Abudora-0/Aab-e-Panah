@@ -19,7 +19,6 @@ failures = 0
 
 def check(label, condition):
     global failures
-
     if condition:
         print("PASS:", label)
     else:
@@ -27,10 +26,47 @@ def check(label, condition):
         failures += 1
 
 
+def query_waiting_ids():
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT request_id FROM aid_requests WHERE status = %s",
+            ("WAITING",),
+        )
+        return [row[0] for row in cursor.fetchall()]
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
+
+def restore_sample_rows(request_ids):
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        for request_id in request_ids:
+            cursor.execute(
+                "UPDATE aid_requests SET status = %s, served_at = NULL "
+                "WHERE request_id = %s",
+                ("WAITING", request_id),
+            )
+        connection.commit()
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
+
 def delete_test_rows(request_ids):
     connection = None
     cursor = None
-
     try:
         connection = get_connection()
         cursor = connection.cursor()
@@ -49,23 +85,37 @@ def delete_test_rows(request_ids):
 
 def main():
     global failures
-
-    request_ids = []
+    test_ids = []
+    served_sample_ids = []
+    sample_waiting_ids = []
     test_log = PROJECT_FOLDER / "logs" / "test_requests_audit.log"
     audit_logger = AuditLogger(log_file=test_log)
 
     try:
+        sample_waiting_ids = query_waiting_ids()
         service = RequestService(audit_logger, use_database=True)
         first = AidRequest(None, "Test Area One", "water", 5, "")
         second = AidRequest(None, "Test Area Two", "food", 3, "")
         service.add_request(first)
         service.add_request(second)
-        request_ids.extend([first.request_id, second.request_id])
+        test_ids.extend([first.request_id, second.request_id])
 
         waiting = service.waiting_requests()
-        check("requests wait in arrival order", waiting[-2:] == [first, second])
-        served = service.serve_next()
-        check("first request is served", served == first)
+        check("first request has created time", bool(first.created_at))
+        check("second request has created time", bool(second.created_at))
+        check(
+            "test requests are last in arrival order",
+            [item.request_id for item in waiting[-2:]] == test_ids,
+        )
+
+        served = None
+        while served is None or served.request_id != first.request_id:
+            served = service.serve_next()
+            if served is None:
+                break
+            if served.request_id not in test_ids:
+                served_sample_ids.append(served.request_id)
+        check("first request is served", served is not None and served.request_id == first.request_id)
 
         connection = None
         cursor = None
@@ -85,14 +135,23 @@ def main():
                 connection.close()
 
         restarted_service = RequestService(audit_logger, use_database=True)
-        remaining = restarted_service.waiting_requests()
-        check("remaining request stays waiting", second in remaining)
+        remaining_ids = [
+            item.request_id for item in restarted_service.waiting_requests()
+        ]
+        check("second request stays waiting", second.request_id in remaining_ids)
     except mysql.connector.Error as error:
         print("Database test failed:", error)
         failures += 1
     finally:
-        if request_ids:
-            delete_test_rows(request_ids)
+        if served_sample_ids:
+            restore_sample_rows(served_sample_ids)
+        if test_ids:
+            delete_test_rows(test_ids)
+        if sample_waiting_ids:
+            check(
+                "sample waiting rows restored",
+                query_waiting_ids() == sample_waiting_ids,
+            )
 
     if failures == 0:
         print("ALL PASS")
