@@ -23,7 +23,13 @@ def insert_request(area_name, needs, severity):
             (area_name, needs, severity),
         )
         connection.commit()
-        return cursor.lastrowid
+        request_id = cursor.lastrowid
+        cursor.execute(
+            "SELECT created_at FROM aid_requests WHERE request_id = %s",
+            (request_id,),
+        )
+        row = cursor.fetchone()
+        return request_id, str(row[0])
     except mysql.connector.Error as error:
         logger.error("Could not insert aid request: %s", error)
         if connection is not None:
