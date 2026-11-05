@@ -52,6 +52,34 @@ def main():
         json=dict(request_base, area_name=""),
     )
     check("blank area refused", response.status_code == 400)
+    supply_url = "/api/camps/999999/supplies"
+    response = client.post(supply_url, json={"quantity": 1, "expiry_days": 1})
+    check("missing item name refused", response.status_code == 400)
+    response = client.post(
+        supply_url,
+        json={"item_name": "Water", "quantity": 0, "expiry_days": 1},
+    )
+    check("zero supply quantity refused", response.status_code == 400)
+    response = client.post(
+        supply_url,
+        json={"item_name": "Water", "quantity": 100001, "expiry_days": 1},
+    )
+    check("large supply quantity refused", response.status_code == 400)
+    response = client.post(
+        supply_url,
+        json={"item_name": "Water", "quantity": 1, "expiry_days": -1},
+    )
+    check("negative expiry refused", response.status_code == 400)
+    response = client.post(
+        "/api/camps/999999/supplies/issue",
+        json={"item_name": "Water", "amount": 0},
+    )
+    check("zero issue amount refused", response.status_code == 400)
+    response = client.post(
+        supply_url,
+        json={"item_name": "I" * 101, "quantity": 1, "expiry_days": 1},
+    )
+    check("long item name refused", response.status_code == 400)
 
     if failures == 0:
         print("ALL PASS")

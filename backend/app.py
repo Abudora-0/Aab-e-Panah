@@ -14,6 +14,9 @@ from backend.logging_tools.audit_logger import AuditLogger
 from backend.models.aid_request import AidRequest
 from backend.services.request_service import RequestService
 from backend.services.camp_service import CampService
+from backend.services.supply_service import SupplyService
+from backend.services.undo_manager import UndoManager
+from backend.services.undo_service import UndoService
 
 
 PROJECT_FOLDER = Path(__file__).resolve().parents[1]
@@ -22,11 +25,17 @@ AREA_NAME_MAX = 100
 NEEDS_MAX = 255
 CAMP_NAME_MAX = 100
 DISTRICT_MAX = 100
+ITEM_NAME_MAX = 100
+QUANTITY_MAX = 100000
+EXPIRY_MAX = 3650
 
 app = Flask(__name__, static_folder=None)
 logger = get_logger("app")
 audit_logger = AuditLogger()
 request_service = RequestService(audit_logger)
+undo_manager = UndoManager(audit_logger)
+undo_service = UndoService(undo_manager, audit_logger)
+supply_service = SupplyService(undo_manager, audit_logger)
 
 
 def camp_to_dict(camp):
@@ -62,6 +71,15 @@ def request_to_dict(aid_request, position=None):
         data["served_at"] = aid_request.served_at
 
     return data
+
+
+def supply_to_dict(batch):
+    return {
+        "batch_id": batch.batch_id,
+        "item_name": batch.item_name,
+        "quantity": batch.quantity,
+        "expiry_days": batch.expiry_days,
+    }
 
 
 @app.route("/")
@@ -138,19 +156,18 @@ def add_camp():
         audit_logger.log_error("admin", ActionNames.ADD_CAMP, "camp", reason)
         return jsonify({"error": reason}), 400
 
-    connection = None
-    cursor = None
-
     try:
-        connection = get_connection()
-        cursor = connection.cursor()
-        cursor.execute(
-            "INSERT INTO camps (name, district, capacity) VALUES (%s, %s, %s)",
-            (name, district, capacity),
+        camp_id, created_at = camp_repository.insert_camp(
+            name,
+            district,
+            capacity,
         )
-        connection.commit()
-        camp_id = cursor.lastrowid
         logger.info("Added camp %s", camp_id)
+        undo_manager.record_action(
+            ActionNames.ADD_CAMP,
+            str(camp_id),
+            name,
+        )
         audit_logger.log_action(
             "admin",
             ActionNames.ADD_CAMP,
@@ -174,12 +191,6 @@ def add_camp():
             "Database insert failed",
         )
         return jsonify({"error": "Could not add camp"}), 500
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if connection is not None:
-            connection.close()
-
     return jsonify(
         {
             "camp_id": camp_id,
@@ -187,6 +198,8 @@ def add_camp():
             "district": district,
             "capacity": capacity,
             "current_occupancy": 0,
+            "created_at": created_at,
+            "free_space": capacity,
         }
     ), 201
 
@@ -366,6 +379,174 @@ def get_ranked_requests():
         request_data.append(data)
         rank += 1
     return jsonify({"requests": request_data})
+
+
+@app.route("/api/camps/<int:camp_id>/supplies")
+def get_supplies(camp_id):
+    try:
+        camp = supply_service.load_camp_with_supplies(camp_id)
+        if camp is None:
+            return jsonify({"error": "Camp not found"}), 404
+        return jsonify(
+            {
+                **camp_to_dict(camp),
+                "supplies": [
+                    supply_to_dict(batch) for batch in camp.supply_list()
+                ],
+            }
+        )
+    except mysql.connector.Error as error:
+        logger.error("Could not load supplies: %s", error)
+        return jsonify({"error": "Could not load supplies"}), 500
+
+
+def validate_supply_number(value, label, maximum, allow_zero):
+    if isinstance(value, bool):
+        return None, label + " must be a whole number"
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        return None, label + " must be a whole number"
+    if number != value:
+        return None, label + " must be a whole number"
+    minimum = 0 if allow_zero else 1
+    if number < minimum or number > maximum:
+        if allow_zero:
+            return None, label + " must be from 0 to " + str(maximum)
+        return None, label + " must be from 1 to " + str(maximum)
+    return number, None
+
+
+@app.route("/api/camps/<int:camp_id>/supplies", methods=["POST"])
+def add_supply(camp_id):
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        reason = "Request must contain JSON data"
+        audit_logger.log_error("admin", ActionNames.ADD_SUPPLY, "supply", reason)
+        return jsonify({"error": reason}), 400
+    item_name = str(data.get("item_name", "")).strip()
+    if not item_name:
+        reason = "Item name is required"
+        audit_logger.log_error("admin", ActionNames.ADD_SUPPLY, "supply", reason)
+        return jsonify({"error": reason}), 400
+    if len(item_name) > ITEM_NAME_MAX:
+        reason = "Item name must be 100 characters or less"
+        audit_logger.log_error("admin", ActionNames.ADD_SUPPLY, "supply", reason)
+        return jsonify({"error": reason}), 400
+    quantity, reason = validate_supply_number(
+        data.get("quantity"),
+        "Quantity",
+        QUANTITY_MAX,
+        False,
+    )
+    if reason is not None:
+        audit_logger.log_error("admin", ActionNames.ADD_SUPPLY, "supply", reason)
+        return jsonify({"error": reason}), 400
+    expiry_days, reason = validate_supply_number(
+        data.get("expiry_days"),
+        "Expiry days",
+        EXPIRY_MAX,
+        True,
+    )
+    if reason is not None:
+        audit_logger.log_error("admin", ActionNames.ADD_SUPPLY, "supply", reason)
+        return jsonify({"error": reason}), 400
+    try:
+        batch = supply_service.add_supply(
+            camp_id,
+            item_name,
+            quantity,
+            expiry_days,
+        )
+        if batch is None:
+            return jsonify({"error": "Camp not found"}), 404
+        return jsonify(supply_to_dict(batch)), 201
+    except mysql.connector.Error as error:
+        logger.error("Could not add supply: %s", error)
+        return jsonify({"error": "Could not add supply"}), 500
+
+
+@app.route("/api/camps/<int:camp_id>/supplies/issue", methods=["POST"])
+def issue_supplies(camp_id):
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        reason = "Request must contain JSON data"
+        audit_logger.log_error(
+            "admin",
+            ActionNames.ISSUE_SUPPLIES,
+            "supply",
+            reason,
+        )
+        return jsonify({"error": reason}), 400
+    item_name = str(data.get("item_name", "")).strip()
+    if not item_name:
+        reason = "Item name is required"
+        audit_logger.log_error(
+            "admin",
+            ActionNames.ISSUE_SUPPLIES,
+            "supply",
+            reason,
+        )
+        return jsonify({"error": reason}), 400
+    if len(item_name) > ITEM_NAME_MAX:
+        reason = "Item name must be 100 characters or less"
+        audit_logger.log_error(
+            "admin",
+            ActionNames.ISSUE_SUPPLIES,
+            "supply",
+            reason,
+        )
+        return jsonify({"error": reason}), 400
+    amount, reason = validate_supply_number(
+        data.get("amount"),
+        "Amount",
+        QUANTITY_MAX,
+        False,
+    )
+    if reason is not None:
+        audit_logger.log_error(
+            "admin",
+            ActionNames.ISSUE_SUPPLIES,
+            "supply",
+            reason,
+        )
+        return jsonify({"error": reason}), 400
+    try:
+        result = supply_service.issue_supplies(camp_id, item_name, amount)
+        if result is None:
+            return jsonify({"error": "Camp not found"}), 404
+        if not result["ok"]:
+            return jsonify({"error": result["message"]}), 400
+        return jsonify(result)
+    except mysql.connector.Error as error:
+        logger.error("Could not issue supplies: %s", error)
+        return jsonify({"error": "Could not issue supplies"}), 500
+
+
+@app.route("/api/undo/history")
+def get_undo_history():
+    history = []
+    for record in undo_manager.history():
+        history.append(
+            {
+                "action": record["action_name"],
+                "target": record["target"],
+                "details": record["details"],
+            }
+        )
+    return jsonify({"history": history, "count": undo_manager.count()})
+
+
+@app.route("/api/undo", methods=["POST"])
+def perform_undo():
+    try:
+        result = undo_service.perform_undo()
+        if result is None:
+            return jsonify({"error": "Nothing to undo"}), 404
+        return jsonify(result)
+    except mysql.connector.Error as error:
+        logger.error("Could not undo action: %s", error)
+        return jsonify({"error": "Could not undo action"}), 500
 
 
 if __name__ == "__main__":
