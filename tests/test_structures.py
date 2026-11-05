@@ -120,6 +120,16 @@ def main():
     check("undo newest action", newest_action["action_name"] == "BLOCK_ROAD")
     check("undo next action", undo_manager.undo_last()["action_name"] == "ADD_ROAD")
     check("undo empty after actions", not undo_manager.can_undo())
+    undo_manager.record_action("ADD_CAMP", "1", "Camp one")
+    undo_manager.record_action("ADD_SUPPLY", "2", "Water")
+    check("undo peek newest", undo_manager.peek_last()["target"] == "2")
+    check(
+        "undo history newest first",
+        [record["target"] for record in undo_manager.history()] == ["2", "1"],
+    )
+    check("undo count", undo_manager.count() == 2)
+    undo_manager.clear()
+    check("undo clear", undo_manager.count() == 0)
 
     if failures == 0:
         print("ALL PASS")

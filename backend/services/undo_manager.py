@@ -6,6 +6,7 @@ from backend.structures.stack import Stack
 
 
 class UndoManager:
+    # This history is in memory and is lost when the app restarts.
     def __init__(self, audit_logger=None):
         self.actions = Stack()
         if audit_logger is None:
@@ -36,3 +37,21 @@ class UndoManager:
 
     def can_undo(self):
         return not self.actions.is_empty()
+
+    def peek_last(self):
+        return self.actions.peek()
+
+    def history(self):
+        records = self.actions.to_list()
+        newest_first = []
+        index = len(records) - 1
+        while index >= 0:
+            newest_first.append(records[index])
+            index -= 1
+        return newest_first
+
+    def count(self):
+        return self.actions.size()
+
+    def clear(self):
+        self.actions = Stack()
