@@ -70,37 +70,51 @@ def merge_sort(items, get_key, descending=False):
     return _merge_sort(list(items), get_key, descending)
 
 
-def _partition(items, low, high, get_key, descending):
+def _partition_three_way(items, low, high, get_key, descending):
     middle = (low + high) // 2
-    items[middle], items[high] = items[high], items[middle]
-    pivot_key = get_key(items[high])
-    store_index = low
+    pivot_key = get_key(items[middle])
+    before = low
+    current = low
+    after = high
 
-    index = low
-    while index < high:
-        item_key = get_key(items[index])
-        comes_before = item_key <= pivot_key
+    while current <= after:
+        current_key = get_key(items[current])
         if descending:
-            comes_before = item_key >= pivot_key
-        if comes_before:
-            items[store_index], items[index] = items[index], items[store_index]
-            store_index += 1
-        index += 1
+            is_before = current_key > pivot_key
+            is_after = current_key < pivot_key
+        else:
+            is_before = current_key < pivot_key
+            is_after = current_key > pivot_key
 
-    items[store_index], items[high] = items[high], items[store_index]
-    return store_index
+        if is_before:
+            items[before], items[current] = items[current], items[before]
+            before += 1
+            current += 1
+        elif is_after:
+            items[current], items[after] = items[after], items[current]
+            after -= 1
+        else:
+            current += 1
+
+    return before, after
 
 
 def _quick_sort(items, low, high, get_key, descending):
     if low >= high:
         return
-    pivot_index = _partition(items, low, high, get_key, descending)
-    _quick_sort(items, low, pivot_index - 1, get_key, descending)
-    _quick_sort(items, pivot_index + 1, high, get_key, descending)
+    equal_start, equal_end = _partition_three_way(
+        items,
+        low,
+        high,
+        get_key,
+        descending,
+    )
+    _quick_sort(items, low, equal_start - 1, get_key, descending)
+    _quick_sort(items, equal_end + 1, high, get_key, descending)
 
 
 def quick_sort(items, get_key, descending=False):
-    # time: O(n log n) average, extra space: O(log n)
+    # time: O(n log n) average with equal values handled, extra space: O(log n)
     result = list(items)
     _quick_sort(result, 0, len(result) - 1, get_key, descending)
     return result

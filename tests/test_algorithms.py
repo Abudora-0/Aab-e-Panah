@@ -25,6 +25,10 @@ def pair_key(item):
     return item[0]
 
 
+def has_same_key(item):
+    return item["key"]
+
+
 def check(label, condition):
     global failures
     if condition:
@@ -59,6 +63,34 @@ def main():
             check("quick sort matches sorted", quick_sort(values, identity, descending) == expected)
             check("sort keeps input", values == original)
     check("merge sort duplicates stable", merge_sort([(1, "a"), (1, "b")], pair_key) == [(1, "a"), (1, "b")])
+    same_key_items = []
+    for index in range(5000):
+        same_key_items.append({"key": 1, "index": index})
+    quick_same = quick_sort(same_key_items, has_same_key)
+    check("quick sort handles 5000 equal keys", len(quick_same) == 5000)
+    five_keys = []
+    for index in range(3000):
+        five_keys.append(index % 5)
+    check(
+        "quick sort handles five repeated keys",
+        quick_sort(five_keys, identity) == sorted(five_keys),
+    )
+    already_sorted = []
+    for index in range(3000):
+        already_sorted.append(index)
+    check(
+        "quick sort handles sorted input",
+        quick_sort(already_sorted, identity) == already_sorted,
+    )
+    random.seed(2)
+    duplicate_checks_pass = True
+    for index in range(200):
+        values = []
+        for value_index in range(100):
+            values.append(random.randint(1, 8))
+        if quick_sort(values, identity) != sorted(values):
+            duplicate_checks_pass = False
+    check("quick sort duplicate random lists", duplicate_checks_pass)
 
     values = [1, 3, 5, 7, 9]
     check("binary search start", binary_search(values, identity, 1) == 0)
