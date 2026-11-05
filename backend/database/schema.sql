@@ -16,3 +16,13 @@ CREATE TABLE IF NOT EXISTS aid_requests (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     served_at TIMESTAMP NULL
 );
+
+CREATE TABLE IF NOT EXISTS supply_batches (
+    batch_id INT AUTO_INCREMENT PRIMARY KEY,
+    camp_id INT NOT NULL,
+    item_name VARCHAR(100) NOT NULL,
+    quantity INT NOT NULL,
+    expiry_days INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (camp_id) REFERENCES camps(camp_id) ON DELETE CASCADE
+);
