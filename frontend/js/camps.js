@@ -81,6 +81,12 @@ campForm.addEventListener("submit", async function (event) {
         campMessage.textContent = "Camp added successfully";
         campForm.reset();
         await loadCamps();
+        if (typeof refreshCampSelect === "function") {
+            await refreshCampSelect();
+        }
+        if (typeof loadUndoHistory === "function") {
+            await loadUndoHistory();
+        }
     } catch (error) {
         campMessage.textContent = "Could not add camp";
     }

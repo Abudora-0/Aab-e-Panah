@@ -71,6 +71,47 @@
         <p id="camp-find-message"></p>
 
         <section>
+            <h2>Camp Supplies</h2>
+            <label for="supply-camp">Camp</label>
+            <select id="supply-camp"></select>
+            <p id="supply-message"></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Batch id</th>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Expiry days</th>
+                    </tr>
+                </thead>
+                <tbody id="supply-list"></tbody>
+            </table>
+            <form id="add-supply-form">
+                <label for="supply-item">Item</label>
+                <input id="supply-item" maxlength="100" required>
+                <label for="supply-quantity">Quantity</label>
+                <input id="supply-quantity" type="number" min="1" max="100000" required>
+                <label for="supply-expiry">Expiry days</label>
+                <input id="supply-expiry" type="number" min="0" max="3650" required>
+                <button type="submit">Add supply batch</button>
+            </form>
+            <form id="issue-supply-form">
+                <label for="issue-item">Item to issue</label>
+                <input id="issue-item" maxlength="100" required>
+                <label for="issue-amount">Amount</label>
+                <input id="issue-amount" type="number" min="1" max="100000" required>
+                <button type="submit">Issue supplies</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Undo</h2>
+            <button id="undo-button" type="button">Undo last action</button>
+            <p id="undo-message"></p>
+            <ul id="undo-list"></ul>
+        </section>
+
+        <section>
             <h2>Aid Requests</h2>
             <form id="request-form">
                 <label for="area-name">Area name</label>
@@ -137,5 +178,7 @@
     </main>
     <script src="/static/js/camps.js"></script>
     <script src="/static/js/aid_requests.js"></script>
+    <script src="/static/js/supplies.js"></script>
+    <script src="/static/js/undo.js"></script>
 </body>
 </html>
