@@ -80,6 +80,21 @@ def main():
         json={"item_name": "I" * 101, "quantity": 1, "expiry_days": 1},
     )
     check("long item name refused", response.status_code == 400)
+    occupancy_url = "/api/camps/999999/arrivals"
+    for label, value in (
+        ("zero people refused", 0),
+        ("decimal people refused", 2.5),
+        ("text people refused", "many"),
+        ("large people refused", 100001),
+    ):
+        response = client.post(occupancy_url, json={"people": value})
+        check(label, response.status_code == 400)
+    response = client.get("/api/audit?count=0")
+    check("audit zero count refused", response.status_code == 400)
+    response = client.get("/api/audit?action=NOT_AN_ACTION")
+    check("audit unknown action refused", response.status_code == 400)
+    response = client.get("/api/audit?result=UNKNOWN")
+    check("audit unknown result refused", response.status_code == 400)
 
     if failures == 0:
         print("ALL PASS")

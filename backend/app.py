@@ -45,11 +45,7 @@ def camp_to_dict(camp):
         "district": camp.district,
         "capacity": camp.capacity,
         "current_occupancy": camp.current_occupancy,
-        "created_at": (
-            camp.created_at.isoformat()
-            if hasattr(camp.created_at, "isoformat")
-            else camp.created_at
-        ),
+        "created_at": str(camp.created_at) if camp.created_at else None,
         "free_space": camp.free_space(),
     }
 
@@ -547,6 +543,73 @@ def perform_undo():
     except mysql.connector.Error as error:
         logger.error("Could not undo action: %s", error)
         return jsonify({"error": "Could not undo action"}), 500
+
+
+def register_occupancy(camp_id, action_name):
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        reason = "Request must contain JSON data"
+        audit_logger.log_error("admin", action_name, str(camp_id), reason)
+        return jsonify({"error": reason}), 400
+    people, reason = validate_supply_number(
+        data.get("people"),
+        "People",
+        100000,
+        False,
+    )
+    if reason is not None:
+        audit_logger.log_error("admin", action_name, str(camp_id), reason)
+        return jsonify({"error": reason}), 400
+    try:
+        service = CampService([], audit_logger)
+        if action_name == ActionNames.REGISTER_ARRIVAL:
+            result = service.register_arrival(camp_id, people)
+        else:
+            result = service.register_departure(camp_id, people)
+        if result is None:
+            return jsonify({"error": "Camp not found"}), 404
+        if not result["ok"]:
+            return jsonify({"error": result["message"]}), 400
+        return jsonify(result)
+    except mysql.connector.Error as error:
+        logger.error("Could not update occupancy: %s", error)
+        return jsonify({"error": "Could not update camp occupancy"}), 500
+
+
+@app.route("/api/camps/<int:camp_id>/arrivals", methods=["POST"])
+def register_arrivals(camp_id):
+    return register_occupancy(camp_id, ActionNames.REGISTER_ARRIVAL)
+
+
+@app.route("/api/camps/<int:camp_id>/departures", methods=["POST"])
+def register_departures(camp_id):
+    return register_occupancy(camp_id, ActionNames.REGISTER_DEPARTURE)
+
+
+@app.route("/api/audit")
+def get_audit_entries():
+    count_text = request.args.get("count", "50")
+    try:
+        count = int(count_text)
+    except (TypeError, ValueError):
+        return jsonify({"error": "Count must be a whole number from 1 to 200"}), 400
+    if count < 1 or count > 200 or str(count) != count_text:
+        return jsonify({"error": "Count must be a whole number from 1 to 200"}), 400
+
+    action = request.args.get("action")
+    if action == "all":
+        action = None
+    elif action is not None and action not in ActionNames.all_names():
+        return jsonify({"error": "Unknown audit action"}), 400
+
+    result = request.args.get("result")
+    if result == "all":
+        result = None
+    elif result not in ("SUCCESS", "FAILED", None):
+        return jsonify({"error": "Result must be SUCCESS or FAILED"}), 400
+
+    entries = audit_logger.read_entries(count, action, result)
+    return jsonify({"entries": entries, "count": len(entries)})
 
 
 if __name__ == "__main__":
