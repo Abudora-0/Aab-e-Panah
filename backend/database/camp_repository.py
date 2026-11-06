@@ -84,6 +84,33 @@ def delete_camp(camp_id):
             connection.close()
 
 
+def change_occupancy(camp_id, change):
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "UPDATE camps SET current_occupancy = current_occupancy + %s "
+            "WHERE camp_id = %s "
+            "AND current_occupancy + %s >= 0 "
+            "AND current_occupancy + %s <= capacity",
+            (change, camp_id, change, change),
+        )
+        connection.commit()
+        return cursor.rowcount == 1
+    except mysql.connector.Error as error:
+        logger.error("Could not change camp occupancy: %s", error)
+        if connection is not None:
+            connection.rollback()
+        raise
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
+
 def load_all_camps():
     connection = None
     cursor = None
