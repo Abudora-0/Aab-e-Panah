@@ -17,22 +17,51 @@ INSERT INTO camps (name, district, capacity) VALUES
 INSERT INTO camps (name, district, capacity) VALUES
 ('Charsadda Relief Centre', 'Charsadda', 600);
 
-INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days) VALUES
-(1, 'Water bottles', 1000, 30),
-(1, 'Rice bags', 300, 180),
-(1, 'Medicine kits', 80, 14),
-(2, 'Tents', 120, 90),
-(2, 'Blankets', 250, 365),
-(2, 'Water bottles', 700, 45),
-(3, 'Rice bags', 500, 150),
-(3, 'Tents', 160, 60),
-(3, 'Medicine kits', 100, 10),
-(4, 'Blankets', 180, 240),
-(4, 'Water bottles', 400, 20),
-(4, 'Tents', 70, 75),
-(5, 'Rice bags', 450, 120),
-(5, 'Medicine kits', 90, 12),
-(5, 'Blankets', 220, 300);
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Water bottles', 1000, 30 FROM camps
+WHERE name = 'Dadu Relief Camp';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Rice bags', 300, 180 FROM camps
+WHERE name = 'Dadu Relief Camp';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Medicine kits', 80, 14 FROM camps
+WHERE name = 'Dadu Relief Camp';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Tents', 120, 90 FROM camps
+WHERE name = 'Jacobabad Safe Shelter';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Blankets', 250, 365 FROM camps
+WHERE name = 'Jacobabad Safe Shelter';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Water bottles', 700, 45 FROM camps
+WHERE name = 'Jacobabad Safe Shelter';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Rice bags', 500, 150 FROM camps
+WHERE name = 'Nowshera Community Camp';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Tents', 160, 60 FROM camps
+WHERE name = 'Nowshera Community Camp';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Medicine kits', 100, 10 FROM camps
+WHERE name = 'Nowshera Community Camp';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Blankets', 180, 240 FROM camps
+WHERE name = 'Rajanpur Flood Relief Camp';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Water bottles', 400, 20 FROM camps
+WHERE name = 'Rajanpur Flood Relief Camp';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Tents', 70, 75 FROM camps
+WHERE name = 'Rajanpur Flood Relief Camp';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Rice bags', 450, 120 FROM camps
+WHERE name = 'Charsadda Relief Centre';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Medicine kits', 90, 12 FROM camps
+WHERE name = 'Charsadda Relief Centre';
+INSERT INTO supply_batches (camp_id, item_name, quantity, expiry_days)
+SELECT camp_id, 'Blankets', 220, 300 FROM camps
+WHERE name = 'Charsadda Relief Centre';
 
 INSERT INTO aid_requests (area_name, needs, severity) VALUES
 ('Mehar', 'water', 5);

@@ -36,17 +36,19 @@ FLUSH PRIVILEGES;
 4. Copy `.env.example` to `.env` and put the password in it. Never commit
 `.env`.
 
-5. Run `backend/database/setup_db.py`. It asks for `YES` because it clears
-the sample tables.
+5. Run `backend/database/setup_db.py` twice in a row. It asks for `YES`
+because it clears the sample tables. Both runs should finish successfully.
 
 6. Run the tests and start the app using the commands below.
 
 ## Features so far
 
 - Camp and aid request management
-- Stable sorting and searching
+- Merge sort and counting sort are stable. Quick sort is not stable.
 - Camp supply batches with soonest-expiry issuing
 - In-memory undo for added camps and supplies
+- Camp arrivals and departures with capacity checks
+- Audit log filtering and viewing
 
 ## How to run
 
@@ -58,6 +60,8 @@ venv\Scripts\python.exe tests\test_algorithms.py
 venv\Scripts\python.exe tests\test_api_validation.py
 venv\Scripts\python.exe tests\test_requests_db.py
 venv\Scripts\python.exe tests\test_supplies.py
+venv\Scripts\python.exe tests\test_occupancy.py
+venv\Scripts\python.exe tests\test_audit_viewer.py
 venv\Scripts\python.exe scripts\sort_benchmark.py
 venv\Scripts\flask.exe --app backend.app run --debug
 ```
