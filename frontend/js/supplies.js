@@ -26,6 +26,8 @@ function showSupplies(supplies) {
 
 async function loadCampSupplies() {
     if (!supplyCamp.value) {
+        showSupplies([]);
+        supplyMessage.textContent = "No camps are available";
         return;
     }
     try {
@@ -34,10 +36,12 @@ async function loadCampSupplies() {
         );
         const data = await response.json();
         if (!response.ok) {
+            showSupplies([]);
             supplyMessage.textContent = data.error;
             return;
         }
         showSupplies(data.supplies);
+        supplyMessage.textContent = "";
     } catch (error) {
         supplyMessage.textContent = "Could not load supplies";
     }
@@ -45,15 +49,7 @@ async function loadCampSupplies() {
 
 async function refreshCampSelect() {
     try {
-        const response = await fetch("/api/camps");
-        const camps = await response.json();
-        supplyCamp.textContent = "";
-        for (const camp of camps) {
-            const option = document.createElement("option");
-            option.value = camp.camp_id;
-            option.textContent = camp.name;
-            supplyCamp.appendChild(option);
-        }
+        await fillCampSelect(supplyCamp);
         await loadCampSupplies();
     } catch (error) {
         supplyMessage.textContent = "Could not load camps";

@@ -94,6 +94,32 @@ def main():
         )
         result = undo_service.perform_undo()
         check("undo removes camp", camp_repository.load_camp(test_camp_id) is None)
+
+        undo_manager.record_action(
+            ActionNames.ADD_CAMP,
+            str(test_camp_id),
+            "Supply Test Camp",
+        )
+        real_delete_camp = camp_repository.delete_camp
+
+        def failing_delete_camp(camp_id):
+            raise mysql.connector.Error("test undo failure")
+
+        camp_repository.delete_camp = failing_delete_camp
+        try:
+            try:
+                undo_service.perform_undo()
+            except mysql.connector.Error:
+                pass
+            check("failed undo keeps history", undo_manager.count() == 1)
+            failed_entries = audit_logger.read_entries(
+                10,
+                action=ActionNames.UNDO_ACTION,
+                result="FAILED",
+            )
+            check("failed undo writes audit entry", len(failed_entries) >= 1)
+        finally:
+            camp_repository.delete_camp = real_delete_camp
     except mysql.connector.Error as error:
         print("Database test failed:", error)
         failures += 1

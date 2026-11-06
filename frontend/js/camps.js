@@ -59,6 +59,26 @@ async function loadCamps() {
     }
 }
 
+async function fillCampSelect(selectElement) {
+    const oldValue = selectElement.value;
+    const response = await fetch("/api/camps");
+    const camps = await response.json();
+    selectElement.textContent = "";
+    for (const camp of camps) {
+        const option = document.createElement("option");
+        option.value = camp.camp_id;
+        option.textContent = camp.name;
+        selectElement.appendChild(option);
+    }
+    if (camps.length === 0) {
+        return;
+    }
+    selectElement.value = oldValue;
+    if (selectElement.value !== oldValue) {
+        selectElement.value = camps[0].camp_id;
+    }
+}
+
 campForm.addEventListener("submit", async function (event) {
     event.preventDefault();
     const formData = new FormData(campForm);
@@ -83,6 +103,9 @@ campForm.addEventListener("submit", async function (event) {
         await loadCamps();
         if (typeof refreshCampSelect === "function") {
             await refreshCampSelect();
+        }
+        if (typeof refreshEvacueeCamp === "function") {
+            await refreshEvacueeCamp();
         }
         if (typeof loadUndoHistory === "function") {
             await loadUndoHistory();

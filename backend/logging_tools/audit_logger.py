@@ -76,4 +76,52 @@ class AuditLogger:
     def get_recent(self, count=20):
         if count < 0:
             count = 0
-        return list(reversed(self.recent_entries[-count:]))
+        recent = self.recent_entries[-count:]
+        result = []
+        index = len(recent) - 1
+        while index >= 0:
+            result.append(recent[index])
+            index -= 1
+        return result
+
+    # Queue keeps the window and stack returns matching entries newest first.
+    # time: O(n), extra space: O(count)
+    def read_entries(self, count=50, action=None, result=None):
+        from backend.structures.simple_queue import Queue
+        from backend.structures.stack import Stack
+
+        queue = Queue()
+        try:
+            lines = Path(self.logger.handlers[0].baseFilename).read_text(
+                encoding="utf-8"
+            ).splitlines()
+        except FileNotFoundError:
+            return []
+
+        for line in lines:
+            parts = line.split(" | ", 5)
+            if len(parts) != 6:
+                continue
+            entry = {
+                "time": parts[0],
+                "actor": parts[1],
+                "action": parts[2],
+                "target": parts[3],
+                "result": parts[4],
+                "details": parts[5],
+            }
+            if action is not None and entry["action"] != action:
+                continue
+            if result is not None and entry["result"] != result:
+                continue
+            queue.enqueue(entry)
+            if queue.size() > count:
+                queue.dequeue()
+
+        stack = Stack()
+        for entry in queue.to_list():
+            stack.push(entry)
+        entries = []
+        while not stack.is_empty():
+            entries.append(stack.pop())
+        return entries

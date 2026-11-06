@@ -105,10 +105,62 @@
         </section>
 
         <section>
+            <h2>Evacuees</h2>
+            <label for="evacuee-camp">Camp</label>
+            <select id="evacuee-camp"></select>
+            <form id="arrival-form">
+                <label for="arrival-people">People arriving</label>
+                <input id="arrival-people" type="number" min="1" max="100000" required>
+                <button type="submit">Register arrival</button>
+            </form>
+            <form id="departure-form">
+                <label for="departure-people">People departing</label>
+                <input id="departure-people" type="number" min="1" max="100000" required>
+                <button type="submit">Register departure</button>
+            </form>
+            <p id="evacuee-message"></p>
+        </section>
+
+        <section>
             <h2>Undo</h2>
             <button id="undo-button" type="button">Undo last action</button>
             <p id="undo-message"></p>
             <ul id="undo-list"></ul>
+        </section>
+
+        <section>
+            <h2>Audit Log</h2>
+            <div class="control-bar">
+                <label for="audit-result">Result</label>
+                <select id="audit-result">
+                    <option value="all">All</option>
+                    <option value="SUCCESS">SUCCESS</option>
+                    <option value="FAILED">FAILED</option>
+                </select>
+                <label for="audit-action">Action</label>
+                <select id="audit-action"></select>
+                <label for="audit-count">Entries</label>
+                <select id="audit-count">
+                    <option value="20">20</option>
+                    <option value="50" selected>50</option>
+                    <option value="100">100</option>
+                </select>
+                <button id="audit-refresh" type="button">Refresh</button>
+            </div>
+            <p id="audit-message"></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Actor</th>
+                        <th>Action</th>
+                        <th>Target</th>
+                        <th>Result</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-list"></tbody>
+            </table>
         </section>
 
         <section>
@@ -180,5 +232,7 @@
     <script src="/static/js/aid_requests.js"></script>
     <script src="/static/js/supplies.js"></script>
     <script src="/static/js/undo.js"></script>
+    <script src="/static/js/evacuees.js"></script>
+    <script src="/static/js/audit.js"></script>
 </body>
 </html>
