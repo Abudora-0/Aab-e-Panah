@@ -12,6 +12,7 @@ from backend.models.camp import Camp
 from backend.models.supply_batch import SupplyBatch
 from backend.services.request_service import RequestService
 from backend.services.undo_manager import UndoManager
+from backend.services.undo_service import UndoService
 from backend.structures.linked_list import LinkedList
 from backend.structures.simple_queue import Queue
 from backend.structures.stack import Stack
@@ -130,6 +131,14 @@ def main():
     check("undo count", undo_manager.count() == 2)
     undo_manager.clear()
     check("undo clear", undo_manager.count() == 0)
+    undo_manager.record_action("SOMETHING_ELSE", "abc", "Unknown action")
+    undo_service = UndoService(undo_manager, audit_logger)
+    unknown_result = undo_service.perform_undo()
+    check(
+        "unknown undo action message",
+        unknown_result == {"message": "This action cannot be undone"},
+    )
+    check("unknown undo action removed", undo_manager.count() == 0)
 
     if failures == 0:
         print("ALL PASS")

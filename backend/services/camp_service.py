@@ -2,6 +2,7 @@ import time
 
 from backend.algorithms.searching import binary_search, first_index_at_least
 from backend.algorithms.sorting import merge_sort, quick_sort
+from backend.database import camp_repository
 from backend.logging_tools.action_names import ActionNames
 from backend.logging_tools.audit_logger import AuditLogger
 
@@ -103,13 +104,9 @@ class CampService:
         )
 
     def _load_camp(self, camp_id):
-        from backend.database import camp_repository
-
         return camp_repository.load_camp(camp_id)
 
     def _change_occupancy(self, camp, change, action):
-        from backend.database import camp_repository
-
         changed = camp_repository.change_occupancy(camp.camp_id, change)
         if not changed:
             return {

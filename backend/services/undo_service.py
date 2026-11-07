@@ -16,38 +16,36 @@ class UndoService:
             return None
 
         action_name = record["action_name"]
-        target = int(record["target"])
         if action_name == ActionNames.ADD_CAMP:
-            try:
-                deleted = camp_repository.delete_camp(target)
-            except mysql.connector.Error as error:
-                self.audit_logger.log_error(
-                    "admin",
-                    ActionNames.UNDO_ACTION,
-                    record["target"],
-                    str(error),
-                )
-                raise
-            if deleted:
-                self.undo_manager.undo_last()
-                return {"message": "Undid: added camp " + record["details"]}
-            self.undo_manager.undo_last()
-            return {"message": "Camp was already gone"}
+            return self._undo_record(
+                record,
+                camp_repository.delete_camp,
+                "Undid: added camp ",
+                "Camp was already gone",
+            )
         if action_name == ActionNames.ADD_SUPPLY:
-            try:
-                deleted = supply_repository.delete_supply(target)
-            except mysql.connector.Error as error:
-                self.audit_logger.log_error(
-                    "admin",
-                    ActionNames.UNDO_ACTION,
-                    record["target"],
-                    str(error),
-                )
-                raise
-            if deleted:
-                self.undo_manager.undo_last()
-                return {"message": "Undid: added supply " + record["details"]}
-            self.undo_manager.undo_last()
-            return {"message": "Supply was already gone"}
+            return self._undo_record(
+                record,
+                supply_repository.delete_supply,
+                "Undid: added supply ",
+                "Supply was already gone",
+            )
         self.undo_manager.undo_last()
-        return {"message": "Nothing to undo"}
+        return {"message": "This action cannot be undone"}
+
+    def _undo_record(self, record, delete_function, success_prefix, gone_message):
+        target = int(record["target"])
+        try:
+            deleted = delete_function(target)
+        except mysql.connector.Error as error:
+            self.audit_logger.log_error(
+                "admin",
+                ActionNames.UNDO_ACTION,
+                record["target"],
+                str(error),
+            )
+            raise
+        self.undo_manager.undo_last()
+        if deleted:
+            return {"message": success_prefix + record["details"]}
+        return {"message": gone_message}
