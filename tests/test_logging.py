@@ -19,7 +19,8 @@ def main():
     logger.warning("Test warning message")
     logger.error("Test error message")
 
-    audit_logger = AuditLogger()
+    audit_log_file = log_folder / "test_logging_audit.log"
+    audit_logger = AuditLogger(log_file=audit_log_file)
     audit_logger.log_action(
         "admin",
         ActionNames.ADD_CAMP,
@@ -50,7 +51,7 @@ def main():
     log_files_exist = (
         (log_folder / "app.log").exists()
         and (log_folder / "error.log").exists()
-        and (log_folder / "audit.log").exists()
+        and audit_log_file.exists()
     )
 
     if log_files_exist:

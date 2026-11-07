@@ -49,6 +49,8 @@ because it clears the sample tables. Both runs should finish successfully.
 - In-memory undo for added camps and supplies
 - Camp arrivals and departures with capacity checks
 - Audit log filtering and viewing
+- Audit log removes line breaks
+- Tests use their own audit log files
 
 ## How to run
 
