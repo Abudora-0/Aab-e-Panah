@@ -38,6 +38,13 @@ undo_service = UndoService(undo_manager, audit_logger)
 supply_service = SupplyService(undo_manager, audit_logger)
 
 
+def has_control_characters(text):
+    for character in text:
+        if ord(character) < 32 or ord(character) == 127:
+            return True
+    return False
+
+
 def camp_to_dict(camp):
     return {
         "camp_id": camp.camp_id,
@@ -127,6 +134,12 @@ def add_camp():
         reason = "Name and district are required"
         audit_logger.log_error("admin", ActionNames.ADD_CAMP, "camp", reason)
         return jsonify({"error": reason}), 400
+
+    for value, label in ((name, "Camp name"), (district, "District")):
+        if has_control_characters(value):
+            reason = label + " cannot contain line breaks"
+            audit_logger.log_error("admin", ActionNames.ADD_CAMP, "camp", reason)
+            return jsonify({"error": reason}), 400
 
     length_checks = [
         (name, CAMP_NAME_MAX, "Camp name", ActionNames.ADD_CAMP),
@@ -234,6 +247,12 @@ def add_request():
         reason = "Area name and needs are required"
         audit_logger.log_error("admin", ActionNames.ADD_REQUEST, "request", reason)
         return jsonify({"error": reason}), 400
+
+    for value, label in ((area_name, "Area name"), (needs, "Needs")):
+        if has_control_characters(value):
+            reason = label + " cannot contain line breaks"
+            audit_logger.log_error("admin", ActionNames.ADD_REQUEST, "request", reason)
+            return jsonify({"error": reason}), 400
 
     if len(area_name) > AREA_NAME_MAX:
         reason = "Area name must be 100 characters or less"
@@ -425,6 +444,10 @@ def add_supply(camp_id):
         reason = "Item name is required"
         audit_logger.log_error("admin", ActionNames.ADD_SUPPLY, "supply", reason)
         return jsonify({"error": reason}), 400
+    if has_control_characters(item_name):
+        reason = "Item name cannot contain line breaks"
+        audit_logger.log_error("admin", ActionNames.ADD_SUPPLY, "supply", reason)
+        return jsonify({"error": reason}), 400
     if len(item_name) > ITEM_NAME_MAX:
         reason = "Item name must be 100 characters or less"
         audit_logger.log_error("admin", ActionNames.ADD_SUPPLY, "supply", reason)
@@ -477,6 +500,15 @@ def issue_supplies(camp_id):
     item_name = str(data.get("item_name", "")).strip()
     if not item_name:
         reason = "Item name is required"
+        audit_logger.log_error(
+            "admin",
+            ActionNames.ISSUE_SUPPLIES,
+            "supply",
+            reason,
+        )
+        return jsonify({"error": reason}), 400
+    if has_control_characters(item_name):
+        reason = "Item name cannot contain line breaks"
         audit_logger.log_error(
             "admin",
             ActionNames.ISSUE_SUPPLIES,

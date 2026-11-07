@@ -1,8 +1,12 @@
 # This file holds the audit logger.
 
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
+
+from backend.structures.simple_queue import Queue
+from backend.structures.stack import Stack
 
 
 LOG_FOLDER = Path(__file__).resolve().parents[2] / "logs"
@@ -16,10 +20,13 @@ class AuditLogger:
         self.default_actor = actor
         self.recent_entries = []
         if log_file is None:
-            log_file = LOG_FOLDER / "audit.log"
-        else:
-            log_file = Path(log_file)
-            log_file.parent.mkdir(parents=True, exist_ok=True)
+            log_file = os.environ.get(
+                "AUDIT_LOG_FILE",
+                str(LOG_FOLDER / "audit.log"),
+            )
+        log_file = Path(log_file)
+        self.log_file = log_file
+        log_file.parent.mkdir(parents=True, exist_ok=True)
 
         logger_name = "aab.audit." + str(log_file)
         self.logger = logging.getLogger(logger_name)
@@ -35,6 +42,12 @@ class AuditLogger:
             self.logger.addHandler(handler)
 
     def _add_entry(self, actor, action, target, details, result):
+        # One line must stay one entry.
+        actor = clean_text(actor).replace(" | ", " / ")
+        action = clean_text(action).replace(" | ", " / ")
+        target = clean_text(target).replace(" | ", " / ")
+        result = clean_text(result).replace(" | ", " / ")
+        details = clean_text(details)
         entry = {
             "time": self._current_time(),
             "actor": actor,
@@ -87,12 +100,9 @@ class AuditLogger:
     # Queue keeps the window and stack returns matching entries newest first.
     # time: O(n), extra space: O(count)
     def read_entries(self, count=50, action=None, result=None):
-        from backend.structures.simple_queue import Queue
-        from backend.structures.stack import Stack
-
         queue = Queue()
         try:
-            lines = Path(self.logger.handlers[0].baseFilename).read_text(
+            lines = self.log_file.read_text(
                 encoding="utf-8"
             ).splitlines()
         except FileNotFoundError:
@@ -125,3 +135,14 @@ class AuditLogger:
         while not stack.is_empty():
             entries.append(stack.pop())
         return entries
+
+
+def clean_text(value):
+    cleaned = ""
+    text = str(value)
+    for character in text:
+        if ord(character) < 32 or ord(character) == 127:
+            cleaned += " "
+        else:
+            cleaned += character
+    return cleaned

@@ -54,6 +54,49 @@ def main():
     missing_logger = AuditLogger(log_file=missing_file)
     check("missing file is empty", missing_logger.read_entries() == [])
 
+    cases = [
+        ("log_action", "ACTION | BAD", "action details"),
+        ("log_error", "ERROR_ACTION", "error details"),
+        ("log_exception", "EXCEPTION_ACTION", "exception details"),
+    ]
+    for index, case in enumerate(cases):
+        case_name, action, ending = case
+        case_file = PROJECT_FOLDER / "logs" / (
+            "test_audit_" + str(index) + ".log"
+        )
+        if case_file.exists():
+            case_file.unlink()
+        case_logger = AuditLogger(log_file=case_file)
+        details = "first\n2026 | forged audit line\r\t" + ending
+        if case_name == "log_action":
+            case_logger.log_action("tester", action, "target", details)
+        elif case_name == "log_error":
+            case_logger.log_error("tester", action, "target", details)
+        else:
+            case_logger.log_exception(
+                "tester",
+                action,
+                "target",
+                Exception(details),
+            )
+        lines = case_file.read_text(encoding="utf-8").splitlines()
+        entries = case_logger.read_entries()
+        check(case_name + " writes one line", len(lines) == 1)
+        check(case_name + " reads one entry", len(entries) == 1)
+        check(
+            case_name + " keeps text in one entry",
+            "\n" not in entries[0]["details"]
+            and "\r" not in entries[0]["details"]
+            and "\t" not in entries[0]["details"]
+            and "forged audit line" in entries[0]["details"],
+        )
+        if case_name == "log_action":
+            check(
+                "separator in action kept in one entry",
+                entries[0]["action"] == "ACTION / BAD"
+                and len(entries[0]) == 6,
+            )
+
     if failures == 0:
         print("ALL PASS")
     else:
