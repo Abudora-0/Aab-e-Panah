@@ -7,6 +7,7 @@ from pathlib import Path
 
 from backend.structures.simple_queue import Queue
 from backend.structures.stack import Stack
+from backend.logging_tools.text_rules import clean_text
 
 
 LOG_FOLDER = Path(__file__).resolve().parents[2] / "logs"
@@ -87,8 +88,8 @@ class AuditLogger:
         self.log_error(actor, action, target, str(exception))
 
     def get_recent(self, count=20):
-        if count < 0:
-            count = 0
+        if count <= 0:
+            return []
         recent = self.recent_entries[-count:]
         result = []
         index = len(recent) - 1
@@ -102,13 +103,17 @@ class AuditLogger:
     def read_entries(self, count=50, action=None, result=None):
         queue = Queue()
         try:
-            lines = self.log_file.read_text(
-                encoding="utf-8"
-            ).splitlines()
+            text = self.log_file.read_text(encoding="utf-8")
         except FileNotFoundError:
             return []
 
+        # Split only on newline so Unicode text cannot create entries.
+        lines = text.split("\n")
         for line in lines:
+            if line.endswith("\r"):
+                line = line[:-1]
+            if not line:
+                continue
             parts = line.split(" | ", 5)
             if len(parts) != 6:
                 continue
@@ -135,14 +140,3 @@ class AuditLogger:
         while not stack.is_empty():
             entries.append(stack.pop())
         return entries
-
-
-def clean_text(value):
-    cleaned = ""
-    text = str(value)
-    for character in text:
-        if ord(character) < 32 or ord(character) == 127:
-            cleaned += " "
-        else:
-            cleaned += character
-    return cleaned
