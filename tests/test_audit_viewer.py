@@ -48,6 +48,14 @@ def main():
     entries = logger.read_entries(50)
     check("garbage line skipped", len(entries) == 8)
     check("separator in details kept", entries[3]["details"] == "left | right")
+    check("zero recent entries", logger.get_recent(0) == [])
+    recent_entries = logger.get_recent(2)
+    check(
+        "two recent entries newest first",
+        len(recent_entries) == 2
+        and recent_entries[0]["action"] == "ACTION_7"
+        and recent_entries[1]["action"] == "ACTION_6",
+    )
     missing_file = PROJECT_FOLDER / "logs" / "missing_audit_viewer.log"
     if missing_file.exists():
         missing_file.unlink()
@@ -96,6 +104,49 @@ def main():
                 entries[0]["action"] == "ACTION / BAD"
                 and len(entries[0]) == 6,
             )
+
+    unicode_characters = ("\u2028", "\u2029", "\u0085")
+    for index, character in enumerate(unicode_characters):
+        unicode_file = PROJECT_FOLDER / "logs" / (
+            "test_unicode_audit_" + str(index) + ".log"
+        )
+        if unicode_file.exists():
+            unicode_file.unlink()
+        unicode_logger = AuditLogger(log_file=unicode_file)
+        unicode_logger.log_action(
+            "tester",
+            "UNICODE_ACTION",
+            "target",
+            "before" + character + "2026 | fake audit line",
+        )
+        unicode_text = unicode_file.read_text(encoding="utf-8")
+        unicode_entries = unicode_logger.read_entries()
+        check(
+            "Unicode line break writes one physical line",
+            len(unicode_text.split("\n")) == 2,
+        )
+        check(
+            "Unicode line break reads one entry",
+            len(unicode_entries) == 1,
+        )
+        check(
+            "Unicode line break is cleaned",
+            character not in unicode_entries[0]["details"],
+        )
+
+    hand_file = PROJECT_FOLDER / "logs" / "test_hand_audit.log"
+    if hand_file.exists():
+        hand_file.unlink()
+    hand_text = (
+        "2026-11-08 14:00:00 | tester | HAND_ACTION | target | SUCCESS | "
+        "before\u2028"
+        "2026-11-08 14:00:01 | fake | FAKE_ACTION | target | SUCCESS | forged"
+        "\n"
+    )
+    hand_file.write_text(hand_text, encoding="utf-8")
+    hand_logger = AuditLogger(log_file=hand_file)
+    hand_entries = hand_logger.read_entries()
+    check("handwritten Unicode text stays one entry", len(hand_entries) == 1)
 
     if failures == 0:
         print("ALL PASS")
