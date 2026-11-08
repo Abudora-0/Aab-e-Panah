@@ -27,6 +27,7 @@ def check(label, condition):
 def main():
     client = app.test_client()
     request_base = {"area_name": "Area", "needs": "Water", "severity": 1}
+    unicode_characters = ("\u2028", "\u2029", "\u0085")
     response = client.post(
         "/api/requests",
         json=dict(request_base, area_name="A" * 101),
@@ -51,6 +52,27 @@ def main():
         )
         check("line break in needs refused", response.status_code == 400)
         check("needs line break has no database write", not add_request.called)
+    for character in unicode_characters:
+        with patch("backend.app.request_service.add_request") as add_request:
+            response = client.post(
+                "/api/requests",
+                json=dict(
+                    request_base,
+                    area_name="Area" + character + "name",
+                ),
+            )
+            check(
+                "Unicode area name refused",
+                response.status_code == 400,
+            )
+            check("Unicode area name has no database write", not add_request.called)
+        with patch("backend.app.request_service.add_request") as add_request:
+            response = client.post(
+                "/api/requests",
+                json=dict(request_base, needs="Water" + character + "need"),
+            )
+            check("Unicode needs refused", response.status_code == 400)
+            check("Unicode needs has no database write", not add_request.called)
     response = client.post(
         "/api/camps",
         json={"name": "C" * 101, "district": "D", "capacity": 1},
@@ -70,6 +92,29 @@ def main():
         )
         check("line break in district refused", response.status_code == 400)
         check("district line break has no database write", not insert_camp.called)
+    for character in unicode_characters:
+        with patch("backend.app.camp_repository.insert_camp") as insert_camp:
+            response = client.post(
+                "/api/camps",
+                json={
+                    "name": "Camp" + character + "name",
+                    "district": "D",
+                    "capacity": 1,
+                },
+            )
+            check("Unicode camp name refused", response.status_code == 400)
+            check("Unicode camp name has no database write", not insert_camp.called)
+        with patch("backend.app.camp_repository.insert_camp") as insert_camp:
+            response = client.post(
+                "/api/camps",
+                json={
+                    "name": "Camp",
+                    "district": "D" + character + "istrict",
+                    "capacity": 1,
+                },
+            )
+            check("Unicode district refused", response.status_code == 400)
+            check("Unicode district has no database write", not insert_camp.called)
     response = client.post(
         "/api/camps",
         json={"name": "Camp", "district": "D", "capacity": 0},
@@ -137,6 +182,28 @@ def main():
             "issued item line break has no database write",
             not issue_supplies.called,
         )
+    for character in unicode_characters:
+        with patch("backend.app.supply_service.add_supply") as add_supply:
+            response = client.post(
+                supply_url,
+                json={
+                    "item_name": "Water" + character + "item",
+                    "quantity": 1,
+                    "expiry_days": 1,
+                },
+            )
+            check("Unicode added item name refused", response.status_code == 400)
+            check("Unicode added item has no database write", not add_supply.called)
+        with patch("backend.app.supply_service.issue_supplies") as issue_supplies:
+            response = client.post(
+                "/api/camps/999999/supplies/issue",
+                json={"item_name": "Water" + character + "item", "amount": 1},
+            )
+            check("Unicode issued item name refused", response.status_code == 400)
+            check(
+                "Unicode issued item has no database write",
+                not issue_supplies.called,
+            )
     occupancy_url = "/api/camps/999999/arrivals"
     for label, value in (
         ("zero people refused", 0),

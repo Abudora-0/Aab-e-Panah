@@ -11,6 +11,7 @@ from backend.database import request_repository
 from backend.logging_tools.action_names import ActionNames
 from backend.logging_tools.app_logger import get_logger
 from backend.logging_tools.audit_logger import AuditLogger
+from backend.logging_tools.text_rules import has_control_characters
 from backend.models.aid_request import AidRequest
 from backend.services.request_service import RequestService
 from backend.services.camp_service import CampService
@@ -36,13 +37,6 @@ request_service = RequestService(audit_logger)
 undo_manager = UndoManager(audit_logger)
 undo_service = UndoService(undo_manager, audit_logger)
 supply_service = SupplyService(undo_manager, audit_logger)
-
-
-def has_control_characters(text):
-    for character in text:
-        if ord(character) < 32 or ord(character) == 127:
-            return True
-    return False
 
 
 def camp_to_dict(camp):
