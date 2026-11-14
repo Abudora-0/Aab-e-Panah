@@ -13,6 +13,17 @@ function addCell(row, value) {
     row.appendChild(cell);
 }
 
+function addStatusCell(row, status) {
+    const cell = document.createElement("td");
+    const chip = document.createElement("span");
+    chip.textContent = status;
+    chip.className = status === "SERVED"
+        ? "chip chip-success"
+        : "chip chip-warning";
+    cell.appendChild(chip);
+    row.appendChild(cell);
+}
+
 function showWaitingRequests(requests) {
     requestList.textContent = "";
     for (const aidRequest of requests) {
@@ -21,6 +32,7 @@ function showWaitingRequests(requests) {
         addCell(row, aidRequest.area_name);
         addCell(row, aidRequest.needs);
         addCell(row, aidRequest.severity);
+        addStatusCell(row, aidRequest.status);
         addCell(row, aidRequest.created_at);
         requestList.appendChild(row);
     }
@@ -34,6 +46,7 @@ function showRankedRequests(requests) {
         addCell(row, aidRequest.area_name);
         addCell(row, aidRequest.needs);
         addCell(row, aidRequest.severity);
+        addStatusCell(row, aidRequest.status);
         rankedRequestList.appendChild(row);
     }
 }
@@ -45,6 +58,7 @@ function showServedRequests(requests) {
         addCell(row, aidRequest.area_name);
         addCell(row, aidRequest.needs);
         addCell(row, aidRequest.severity);
+        addStatusCell(row, aidRequest.status);
         addCell(row, aidRequest.served_at);
         servedList.appendChild(row);
     }
@@ -59,14 +73,14 @@ async function loadRequests() {
         const rankedResponse = await fetch("/api/requests/ranked");
         const rankedData = await rankedResponse.json();
         if (!waitingResponse.ok || !servedResponse.ok || !rankedResponse.ok) {
-            requestMessage.textContent = "Could not load requests";
+            showMessage(requestMessage, "Could not load requests", true);
             return;
         }
         showWaitingRequests(waitingData.requests);
         showServedRequests(servedData);
         showRankedRequests(rankedData.requests);
     } catch (error) {
-        requestMessage.textContent = "Could not load requests";
+        showMessage(requestMessage, "Could not load requests", true);
     }
 }
 
@@ -86,14 +100,14 @@ requestForm.addEventListener("submit", async function (event) {
         });
         const data = await response.json();
         if (!response.ok) {
-            requestMessage.textContent = data.error;
+            showMessage(requestMessage, data.error, true);
             return;
         }
-        requestMessage.textContent = "Request added successfully";
+        showMessage(requestMessage, "Request added successfully", false);
         requestForm.reset();
         await loadRequests();
     } catch (error) {
-        requestMessage.textContent = "Could not add request";
+        showMessage(requestMessage, "Could not add request", true);
     }
 });
 
@@ -102,13 +116,13 @@ serveButton.addEventListener("click", async function () {
         const response = await fetch("/api/requests/serve-next", {method: "POST"});
         const data = await response.json();
         if (!response.ok) {
-            requestMessage.textContent = data.error;
+            showMessage(requestMessage, data.error, true);
             return;
         }
-        requestMessage.textContent = "Request served successfully";
+        showMessage(requestMessage, "Request served successfully", false);
         await loadRequests();
     } catch (error) {
-        requestMessage.textContent = "Could not serve request";
+        showMessage(requestMessage, "Could not serve request", true);
     }
 });
 

@@ -36,7 +36,7 @@ async function loadAuditEntries() {
         const data = await response.json();
         auditList.textContent = "";
         if (!response.ok) {
-            auditMessage.textContent = data.error;
+            showMessage(auditMessage, data.error, true);
             return;
         }
         for (const entry of data.entries) {
@@ -52,18 +52,27 @@ async function loadAuditEntries() {
                 entry.result,
                 entry.details,
             ];
-            for (const value of values) {
+            for (let index = 0; index < values.length; index += 1) {
                 const cell = document.createElement("td");
-                cell.textContent = value;
+                if (index === 4) {
+                    const chip = document.createElement("span");
+                    chip.textContent = values[index];
+                    chip.className = values[index] === "FAILED"
+                        ? "chip chip-danger"
+                        : "chip chip-success";
+                    cell.appendChild(chip);
+                } else {
+                    cell.textContent = values[index];
+                }
                 row.appendChild(cell);
             }
             auditList.appendChild(row);
         }
-        auditMessage.textContent = data.entries.length === 0
+        showMessage(auditMessage, data.entries.length === 0
             ? "No audit entries found"
-            : "";
+            : "", false);
     } catch (error) {
-        auditMessage.textContent = "Could not load audit log";
+        showMessage(auditMessage, "Could not load audit log", true);
     }
 }
 

@@ -27,7 +27,7 @@ function showSupplies(supplies) {
 async function loadCampSupplies() {
     if (!supplyCamp.value) {
         showSupplies([]);
-        supplyMessage.textContent = "No camps are available";
+        showMessage(supplyMessage, "No camps are available", true);
         return;
     }
     try {
@@ -37,13 +37,13 @@ async function loadCampSupplies() {
         const data = await response.json();
         if (!response.ok) {
             showSupplies([]);
-            supplyMessage.textContent = data.error;
+            showMessage(supplyMessage, data.error, true);
             return;
         }
         showSupplies(data.supplies);
-        supplyMessage.textContent = "";
+        showMessage(supplyMessage, "", false);
     } catch (error) {
-        supplyMessage.textContent = "Could not load supplies";
+        showMessage(supplyMessage, "Could not load supplies", true);
     }
 }
 
@@ -52,7 +52,7 @@ async function refreshCampSelect() {
         await fillCampSelect(supplyCamp);
         await loadCampSupplies();
     } catch (error) {
-        supplyMessage.textContent = "Could not load camps";
+        showMessage(supplyMessage, "Could not load camps", true);
     }
 }
 
@@ -73,9 +73,9 @@ addSupplyForm.addEventListener("submit", async function (event) {
             }
         );
         const result = await response.json();
-        supplyMessage.textContent = response.ok
+        showMessage(supplyMessage, response.ok
             ? "Supply batch added"
-            : result.error;
+            : result.error, !response.ok);
         if (response.ok) {
             addSupplyForm.reset();
             await loadCampSupplies();
@@ -84,7 +84,7 @@ addSupplyForm.addEventListener("submit", async function (event) {
             }
         }
     } catch (error) {
-        supplyMessage.textContent = "Could not add supply";
+        showMessage(supplyMessage, "Could not add supply", true);
     }
 });
 
@@ -104,9 +104,9 @@ issueSupplyForm.addEventListener("submit", async function (event) {
             }
         );
         const result = await response.json();
-        supplyMessage.textContent = response.ok
+        showMessage(supplyMessage, response.ok
             ? result.message
-            : result.error;
+            : result.error, !response.ok);
         if (response.ok) {
             issueSupplyForm.reset();
             await loadCampSupplies();
@@ -115,7 +115,7 @@ issueSupplyForm.addEventListener("submit", async function (event) {
             }
         }
     } catch (error) {
-        supplyMessage.textContent = "Could not issue supplies";
+        showMessage(supplyMessage, "Could not issue supplies", true);
     }
 });
 

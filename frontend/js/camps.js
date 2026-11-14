@@ -50,12 +50,12 @@ async function loadCamps() {
         const response = await fetch("/api/camps");
         const data = await response.json();
         if (!response.ok) {
-            campMessage.textContent = data.error;
+            showMessage(campMessage, data.error, true);
             return;
         }
         showCamps(data);
     } catch (error) {
-        campMessage.textContent = "Could not load camps";
+        showMessage(campMessage, "Could not load camps", true);
     }
 }
 
@@ -95,10 +95,10 @@ campForm.addEventListener("submit", async function (event) {
         });
         const data = await response.json();
         if (!response.ok) {
-            campMessage.textContent = data.error;
+            showMessage(campMessage, data.error, true);
             return;
         }
-        campMessage.textContent = "Camp added successfully";
+        showMessage(campMessage, "Camp added successfully", false);
         campForm.reset();
         await loadCamps();
         if (typeof refreshCampSelect === "function") {
@@ -111,7 +111,7 @@ campForm.addEventListener("submit", async function (event) {
             await loadUndoHistory();
         }
     } catch (error) {
-        campMessage.textContent = "Could not add camp";
+        showMessage(campMessage, "Could not add camp", true);
     }
 });
 
@@ -126,19 +126,19 @@ sortButton.addEventListener("click", async function () {
         );
         const data = await response.json();
         if (!response.ok) {
-            sortMessage.textContent = data.error;
+            showMessage(sortMessage, data.error, true);
             return;
         }
         showCamps(data.camps);
-        sortMessage.textContent = "Sorted by " + sort + " with "
-            + algorithm + " sort in " + data.milliseconds.toFixed(2) + " ms";
+        showMessage(sortMessage, "Sorted by " + sort + " with "
+            + algorithm + " sort in " + data.milliseconds.toFixed(2) + " ms", false);
     } catch (error) {
-        sortMessage.textContent = "Could not sort camps";
+        showMessage(sortMessage, "Could not sort camps", true);
     }
 });
 
 resetButton.addEventListener("click", async function () {
-    sortMessage.textContent = "";
+    showMessage(sortMessage, "", false);
     await loadCamps();
 });
 
@@ -147,13 +147,13 @@ async function findCamp(url) {
         const response = await fetch(url);
         const data = await response.json();
         if (!response.ok) {
-            findMessage.textContent = data.error;
+            showMessage(findMessage, data.error, true);
             return;
         }
-        findMessage.textContent = data.name + " has " + data.free_space
-            + " free places";
+        showMessage(findMessage, data.name + " has " + data.free_space
+            + " free places", false);
     } catch (error) {
-        findMessage.textContent = "Could not find camp";
+        showMessage(findMessage, "Could not find camp", true);
     }
 }
 

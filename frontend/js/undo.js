@@ -15,7 +15,7 @@ async function loadUndoHistory() {
             undoList.appendChild(item);
         }
     } catch (error) {
-        undoMessage.textContent = "Could not load undo history";
+        showMessage(undoMessage, "Could not load undo history", true);
     }
 }
 
@@ -23,7 +23,11 @@ undoButton.addEventListener("click", async function () {
     try {
         const response = await fetch("/api/undo", {method: "POST"});
         const data = await response.json();
-        undoMessage.textContent = response.ok ? data.message : data.error;
+        showMessage(
+            undoMessage,
+            response.ok ? data.message : data.error,
+            !response.ok
+        );
         if (response.ok) {
             await loadUndoHistory();
             if (typeof loadCamps === "function") {
@@ -37,7 +41,7 @@ undoButton.addEventListener("click", async function () {
             }
         }
     } catch (error) {
-        undoMessage.textContent = "Could not undo action";
+        showMessage(undoMessage, "Could not undo action", true);
     }
 });
 

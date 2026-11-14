@@ -7,7 +7,7 @@ async function refreshEvacueeCamp() {
     try {
         await fillCampSelect(evacueeCamp);
     } catch (error) {
-        evacueeMessage.textContent = "Could not load camps";
+        showMessage(evacueeMessage, "Could not load camps", true);
     }
 }
 
@@ -23,7 +23,11 @@ async function changeOccupancy(path, inputId) {
             }
         );
         const data = await response.json();
-        evacueeMessage.textContent = response.ok ? data.message : data.error;
+        showMessage(
+            evacueeMessage,
+            response.ok ? data.message : data.error,
+            !response.ok
+        );
         if (response.ok) {
             document.getElementById(inputId).value = "";
             await loadCamps();
@@ -34,7 +38,7 @@ async function changeOccupancy(path, inputId) {
             }
         }
     } catch (error) {
-        evacueeMessage.textContent = "Could not update occupancy";
+        showMessage(evacueeMessage, "Could not update occupancy", true);
     }
 }
 
