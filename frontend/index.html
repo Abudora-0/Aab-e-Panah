@@ -3,89 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aab-e-Panah</title>
+    <meta name="theme-color" content="#0B3C5D">
+    <title>Aab-e-Panah Flood Relief Coordination</title>
+    <link rel="icon" href="/static/assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/static/css/theme.css">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
     <main>
-        <p id="status">Checking database...</p>
-        <h1>Aab-e-Panah</h1>
+        <header class="site-header">
+            <img class="logo-slot" src="/static/assets/logo.svg" alt="Aab-e-Panah placeholder logo">
+            <div>
+                <h1 class="site-title">Aab-e-Panah</h1>
+                <p class="site-subtitle">Flood Relief and Evacuation Coordination System</p>
+            </div>
+        </header>
+        <p id="status" class="chip chip-info status-chip">Checking database...</p>
 
-        <form id="camp-form">
-            <label for="camp-name">Camp name</label>
-            <input id="camp-name" name="name" type="text" maxlength="100" required>
+        <nav class="nav-row" aria-label="Page sections">
+            <a href="#camps">Camps</a>
+            <a href="#supplies">Supplies</a>
+            <a href="#evacuees">Evacuees</a>
+            <a href="#undo">Undo</a>
+            <a href="#audit-log">Audit Log</a>
+            <a href="#aid-requests">Aid Requests</a>
+        </nav>
 
-            <label for="district">District</label>
-            <input id="district" name="district" type="text" maxlength="100" required>
+        <section id="camps">
+            <h2>Camps</h2>
+            <form id="camp-form">
+                <label for="camp-name">Camp name</label>
+                <input id="camp-name" name="name" type="text" maxlength="100" required>
+                <label for="district">District</label>
+                <input id="district" name="district" type="text" maxlength="100" required>
+                <label for="capacity">Capacity</label>
+                <input id="capacity" name="capacity" type="number" min="1" step="1" required>
+                <button class="primary-action" type="submit">Add Camp</button>
+            </form>
+            <p id="message" class="message"></p>
+            <div class="control-bar">
+                <label for="camp-sort">Sort by</label>
+                <select id="camp-sort">
+                    <option value="name">Name</option>
+                    <option value="capacity">Capacity</option>
+                    <option value="free_space">Free space</option>
+                </select>
+                <select id="camp-order">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+                <select id="camp-algorithm">
+                    <option value="merge">Merge sort</option>
+                    <option value="quick">Quick sort</option>
+                </select>
+                <button class="secondary-action" id="sort-camps" type="button">Sort</button>
+                <button class="secondary-action" id="reset-camps" type="button">Reset</button>
+            </div>
+            <p id="camp-sort-message" class="message"></p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Name</th><th>District</th><th>Capacity</th><th>Current occupancy</th><th>Free space</th></tr></thead>
+                    <tbody id="camp-list"></tbody>
+                </table>
+            </div>
+            <form id="free-space-form">
+                <label for="minimum-free-space">Find a camp with at least N free places</label>
+                <input id="minimum-free-space" type="number" min="1" required>
+                <button class="secondary-action" type="submit">Find camp</button>
+            </form>
+            <form id="camp-name-search-form">
+                <label for="camp-name-search">Find a camp by name</label>
+                <input id="camp-name-search" type="text" required>
+                <button class="secondary-action" type="submit">Find camp</button>
+            </form>
+            <p id="camp-find-message" class="message"></p>
+        </section>
 
-            <label for="capacity">Capacity</label>
-            <input id="capacity" name="capacity" type="number" min="1" step="1" required>
-
-            <button type="submit">Add Camp</button>
-        </form>
-
-        <p id="message"></p>
-
-        <div class="control-bar">
-            <label for="camp-sort">Sort by</label>
-            <select id="camp-sort">
-                <option value="name">Name</option>
-                <option value="capacity">Capacity</option>
-                <option value="free_space">Free space</option>
-            </select>
-            <select id="camp-order">
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
-            </select>
-            <select id="camp-algorithm">
-                <option value="merge">Merge sort</option>
-                <option value="quick">Quick sort</option>
-            </select>
-            <button id="sort-camps" type="button">Sort</button>
-            <button id="reset-camps" type="button">Reset</button>
-        </div>
-        <p id="camp-sort-message"></p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>District</th>
-                    <th>Capacity</th>
-                    <th>Current occupancy</th>
-                    <th>Free space</th>
-                </tr>
-            </thead>
-            <tbody id="camp-list"></tbody>
-        </table>
-        <form id="free-space-form">
-            <label for="minimum-free-space">Find a camp with at least N free places</label>
-            <input id="minimum-free-space" type="number" min="1" required>
-            <button type="submit">Find camp</button>
-        </form>
-        <form id="camp-name-search-form">
-            <label for="camp-name-search">Find a camp by name</label>
-            <input id="camp-name-search" type="text" required>
-            <button type="submit">Find camp</button>
-        </form>
-        <p id="camp-find-message"></p>
-
-        <section>
-            <h2>Camp Supplies</h2>
+        <section id="supplies">
+            <h2>Supplies</h2>
             <label for="supply-camp">Camp</label>
             <select id="supply-camp"></select>
-            <p id="supply-message"></p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Batch id</th>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>Expiry days</th>
-                    </tr>
-                </thead>
-                <tbody id="supply-list"></tbody>
-            </table>
+            <p id="supply-message" class="message"></p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Batch id</th><th>Item</th><th>Quantity</th><th>Expiry days</th></tr></thead>
+                    <tbody id="supply-list"></tbody>
+                </table>
+            </div>
             <form id="add-supply-form">
                 <label for="supply-item">Item</label>
                 <input id="supply-item" maxlength="100" required>
@@ -93,141 +97,99 @@
                 <input id="supply-quantity" type="number" min="1" max="100000" required>
                 <label for="supply-expiry">Expiry days</label>
                 <input id="supply-expiry" type="number" min="0" max="3650" required>
-                <button type="submit">Add supply batch</button>
+                <button class="primary-action" type="submit">Add supply batch</button>
             </form>
             <form id="issue-supply-form">
                 <label for="issue-item">Item to issue</label>
                 <input id="issue-item" maxlength="100" required>
                 <label for="issue-amount">Amount</label>
                 <input id="issue-amount" type="number" min="1" max="100000" required>
-                <button type="submit">Issue supplies</button>
+                <button class="secondary-action" type="submit">Issue supplies</button>
             </form>
         </section>
 
-        <section>
+        <section id="evacuees">
             <h2>Evacuees</h2>
             <label for="evacuee-camp">Camp</label>
             <select id="evacuee-camp"></select>
             <form id="arrival-form">
                 <label for="arrival-people">People arriving</label>
                 <input id="arrival-people" type="number" min="1" max="100000" required>
-                <button type="submit">Register arrival</button>
+                <button class="primary-action" type="submit">Register arrival</button>
             </form>
             <form id="departure-form">
                 <label for="departure-people">People departing</label>
                 <input id="departure-people" type="number" min="1" max="100000" required>
-                <button type="submit">Register departure</button>
+                <button class="secondary-action" type="submit">Register departure</button>
             </form>
-            <p id="evacuee-message"></p>
+            <p id="evacuee-message" class="message"></p>
         </section>
 
-        <section>
+        <section id="undo">
             <h2>Undo</h2>
-            <button id="undo-button" type="button">Undo last action</button>
-            <p id="undo-message"></p>
+            <button class="primary-action" id="undo-button" type="button">Undo last action</button>
+            <p id="undo-message" class="message"></p>
             <ul id="undo-list"></ul>
         </section>
 
-        <section>
+        <section id="audit-log">
             <h2>Audit Log</h2>
             <div class="control-bar">
                 <label for="audit-result">Result</label>
-                <select id="audit-result">
-                    <option value="all">All</option>
-                    <option value="SUCCESS">SUCCESS</option>
-                    <option value="FAILED">FAILED</option>
-                </select>
+                <select id="audit-result"><option value="all">All</option><option value="SUCCESS">SUCCESS</option><option value="FAILED">FAILED</option></select>
                 <label for="audit-action">Action</label>
                 <select id="audit-action"></select>
                 <label for="audit-count">Entries</label>
-                <select id="audit-count">
-                    <option value="20">20</option>
-                    <option value="50" selected>50</option>
-                    <option value="100">100</option>
-                </select>
-                <button id="audit-refresh" type="button">Refresh</button>
+                <select id="audit-count"><option value="20">20</option><option value="50" selected>50</option><option value="100">100</option></select>
+                <button class="primary-action" id="audit-refresh" type="button">Refresh</button>
             </div>
-            <p id="audit-message"></p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Time</th>
-                        <th>Actor</th>
-                        <th>Action</th>
-                        <th>Target</th>
-                        <th>Result</th>
-                        <th>Details</th>
-                    </tr>
-                </thead>
-                <tbody id="audit-list"></tbody>
-            </table>
+            <p id="audit-message" class="message"></p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th><th>Result</th><th>Details</th></tr></thead>
+                    <tbody id="audit-list"></tbody>
+                </table>
+            </div>
         </section>
 
-        <section>
+        <section id="aid-requests">
             <h2>Aid Requests</h2>
             <form id="request-form">
                 <label for="area-name">Area name</label>
                 <input id="area-name" name="area_name" type="text" maxlength="100" required>
-
                 <label for="needs">Needs</label>
                 <input id="needs" name="needs" type="text" maxlength="255" required>
-
                 <label for="severity">Severity</label>
-                <select id="severity" name="severity">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                </select>
-
-                <button type="submit">Add Request</button>
+                <select id="severity" name="severity"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+                <button class="primary-action" type="submit">Add Request</button>
             </form>
-            <button id="serve-request" type="button">Serve next request</button>
-            <p id="request-message"></p>
-
+            <button class="primary-action" id="serve-request" type="button">Serve next request</button>
+            <p id="request-message" class="message"></p>
             <h3>Waiting requests</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Position</th>
-                        <th>Area</th>
-                        <th>Needs</th>
-                        <th>Severity</th>
-                        <th>Time</th>
-                    </tr>
-                </thead>
-                <tbody id="request-list"></tbody>
-            </table>
-
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Position</th><th>Area</th><th>Needs</th><th>Severity</th><th>Status</th><th>Time</th></tr></thead>
+                    <tbody id="request-list"></tbody>
+                </table>
+            </div>
             <h3>Most urgent first</h3>
             <p>Ranked by severity (counting sort). Serving still follows arrival order.</p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Area</th>
-                        <th>Needs</th>
-                        <th>Severity</th>
-                    </tr>
-                </thead>
-                <tbody id="ranked-request-list"></tbody>
-            </table>
-
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Rank</th><th>Area</th><th>Needs</th><th>Severity</th><th>Status</th></tr></thead>
+                    <tbody id="ranked-request-list"></tbody>
+                </table>
+            </div>
             <h3>Recently served requests</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Area</th>
-                        <th>Needs</th>
-                        <th>Severity</th>
-                        <th>Served time</th>
-                    </tr>
-                </thead>
-                <tbody id="served-list"></tbody>
-            </table>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Area</th><th>Needs</th><th>Severity</th><th>Status</th><th>Served time</th></tr></thead>
+                    <tbody id="served-list"></tbody>
+                </table>
+            </div>
         </section>
     </main>
+    <script src="/static/js/ui.js"></script>
     <script src="/static/js/camps.js"></script>
     <script src="/static/js/aid_requests.js"></script>
     <script src="/static/js/supplies.js"></script>
