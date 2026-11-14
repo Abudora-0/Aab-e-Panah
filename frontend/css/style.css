@@ -1,73 +1,191 @@
-/* This file styles the page. */
-
-body {
-    font-family: Arial, sans-serif;
-    margin: 30px;
-    color: #222222;
+main {
+    margin: 0 auto;
+    max-width: 1100px;
+    padding: var(--space-6) var(--space-4);
 }
 
-main {
-    max-width: 800px;
-    margin: 0 auto;
+.site-header {
+    align-items: center;
+    display: flex;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+.logo-slot {
+    height: 64px;
+    width: 64px;
+}
+
+.site-title {
+    margin: 0;
+}
+
+.site-subtitle {
+    color: var(--color-muted);
+    margin: var(--space-1) 0 0;
+}
+
+.status-chip {
+    margin: 0 0 var(--space-4);
+}
+
+.nav-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+}
+
+.nav-row a {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-small);
+    padding: var(--space-2) var(--space-3);
+    text-decoration: none;
+}
+
+section {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-large);
+    box-shadow: var(--shadow-soft);
+    margin-top: var(--space-5);
+    padding: var(--space-5);
+}
+
+section h2 {
+    margin-top: 0;
 }
 
 form {
     display: grid;
-    gap: 8px;
-    max-width: 350px;
+    gap: var(--space-2);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: var(--space-4) 0;
+}
+
+form label {
+    align-self: end;
+}
+
+form button {
+    align-self: end;
+}
+
+.primary-action {
+    background: var(--color-accent);
+    color: var(--color-ink);
+}
+
+.secondary-action {
+    background: var(--color-primary);
+    color: #FFFFFF;
 }
 
 .control-bar {
+    align-items: end;
     display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-top: 20px;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: var(--space-4) 0;
 }
 
-select {
-    padding: 8px;
-    font-size: 1rem;
+.control-bar label {
+    align-self: center;
 }
 
-input,
-button {
-    padding: 8px;
-    font-size: 1rem;
+.control-bar select {
+    width: auto;
 }
 
-button {
-    margin-top: 8px;
+.table-wrap {
+    overflow-x: auto;
+    width: 100%;
 }
 
 table {
     border-collapse: collapse;
-    margin-top: 25px;
+    margin: var(--space-4) 0;
+    min-width: 620px;
     width: 100%;
 }
 
 th,
 td {
-    border: 1px solid #cccccc;
-    padding: 8px;
+    border: 1px solid var(--color-border);
+    padding: var(--space-2) var(--space-3);
     text-align: left;
 }
 
-#message {
-    min-height: 20px;
+th {
+    background: var(--color-primary);
+    color: #FFFFFF;
 }
 
-section {
-    margin-top: 35px;
+tbody tr:nth-child(even) {
+    background: var(--color-surface);
 }
 
-h3 {
-    margin-top: 25px;
+td:nth-child(n+3) {
+    text-align: right;
 }
 
-ul {
-    padding-left: 20px;
+.message {
+    border-left: 4px solid transparent;
+    min-height: 24px;
+    padding: var(--space-2) var(--space-3);
+}
+
+.message-success {
+    background: var(--success-bg);
+    border-left-color: var(--success-text);
+    color: var(--success-text);
+}
+
+.message-error {
+    background: var(--danger-bg);
+    border-left-color: var(--danger-text);
+    color: var(--danger-text);
+}
+
+.chip {
+    border-radius: 999px;
+    display: inline-block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: var(--space-1) var(--space-2);
+}
+
+.chip-success {
+    background: var(--success-bg);
+    color: var(--success-text);
+}
+
+.chip-warning {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+}
+
+.chip-danger {
+    background: var(--danger-bg);
+    color: var(--danger-text);
+}
+
+.chip-info {
+    background: var(--color-surface);
+    color: var(--color-primary);
 }
 
 .failed-row {
-    color: #b00020;
+    background: var(--danger-bg) !important;
+    color: var(--danger-text);
+}
+
+ul {
+    padding-left: var(--space-5);
+}
+
+@media (max-width: 899px) {
+    form {
+        grid-template-columns: 1fr;
+    }
 }
