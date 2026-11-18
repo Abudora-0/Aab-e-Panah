@@ -69,6 +69,7 @@ class SupplyService:
             return {"ok": False, "message": message}
 
         matching = merge_sort(matching, get_expiry_days)
+        stored_item_name = matching[0].item_name
         remaining = amount
         updates = []
         deletions = []
@@ -92,10 +93,10 @@ class SupplyService:
             "admin",
             ActionNames.ISSUE_SUPPLIES,
             str(camp_id),
-            "Issued " + str(amount) + " " + item_name,
+            "Issued " + str(amount) + " " + stored_item_name,
         )
         return {
             "ok": True,
-            "message": "Issued " + str(amount) + " " + item_name,
+            "message": "Issued " + str(amount) + " " + stored_item_name,
             "batches_used": used,
         }

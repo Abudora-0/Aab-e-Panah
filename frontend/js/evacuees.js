@@ -6,6 +6,11 @@ const evacueeMessage = document.getElementById("evacuee-message");
 async function refreshEvacueeCamp() {
     try {
         await fillCampSelect(evacueeCamp);
+        if (evacueeCamp.options.length === 0) {
+            showMessage(evacueeMessage, "No camps are available", true);
+        } else {
+            showMessage(evacueeMessage, "", false);
+        }
     } catch (error) {
         showMessage(evacueeMessage, "Could not load camps", true);
     }

@@ -89,6 +89,16 @@ def static_files(file_name):
     return send_from_directory(FRONTEND_FOLDER, file_name)
 
 
+@app.route("/assets/<path:file_name>")
+def asset_files(file_name):
+    return send_from_directory(FRONTEND_FOLDER / "assets", file_name)
+
+
+@app.route("/site.webmanifest")
+def web_manifest():
+    return send_from_directory(FRONTEND_FOLDER, "site.webmanifest")
+
+
 @app.route("/api/health")
 def health():
     connected = test_connection()

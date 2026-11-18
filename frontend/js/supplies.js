@@ -27,7 +27,11 @@ function showSupplies(supplies) {
 async function loadCampSupplies() {
     if (!supplyCamp.value) {
         showSupplies([]);
-        showMessage(supplyMessage, "No camps are available", true);
+        if (supplyCamp.options.length === 0) {
+            showMessage(supplyMessage, "No camps are available", true);
+        } else {
+            showMessage(supplyMessage, "", false);
+        }
         return;
     }
     try {
@@ -50,6 +54,11 @@ async function loadCampSupplies() {
 async function refreshCampSelect() {
     try {
         await fillCampSelect(supplyCamp);
+        if (supplyCamp.options.length === 0) {
+            showMessage(supplyMessage, "No camps are available", true);
+        } else {
+            showMessage(supplyMessage, "", false);
+        }
         await loadCampSupplies();
     } catch (error) {
         showMessage(supplyMessage, "Could not load camps", true);
