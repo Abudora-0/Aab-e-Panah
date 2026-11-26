@@ -1,69 +1,157 @@
+@font-face {
+    font-family: "Bricolage Grotesque";
+    src: url("/static/vendor/fonts/bricolage-grotesque-latin-400-normal.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Instrument Sans";
+    src: url("/static/vendor/fonts/instrument-sans-latin-400-normal.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "JetBrains Mono";
+    src: url("/static/vendor/fonts/jetbrains-mono-latin-400-normal.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
 :root {
+    color-scheme: light;
     --color-primary: #0B3C5D;
+    --color-deep: #082C45;
     --color-secondary: #1B7F9E;
     --color-surface: #E8F4F8;
+    --color-foam: #F7FCFD;
     --color-page: #F7FAFC;
     --color-card: #FFFFFF;
     --color-accent: #F2A33A;
     --color-ink: #1F2A33;
-    --color-muted: #46525C;
-    --color-border: #D5E1E8;
-    --success-text: #1B5E20;
-    --success-bg: #E6F4EA;
-    --warning-text: #7A4B00;
-    --warning-bg: #FFF3DC;
-    --danger-text: #9B1C1C;
-    --danger-bg: #FDECEC;
-    --font-stack: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+    --color-muted: #405461;
+    --color-border: #BDD3DD;
+    --success-text: #17613B;
+    --success-bg: #E4F3E9;
+    --warning-text: #744700;
+    --warning-bg: #FFF0D5;
+    --danger-text: #9B2828;
+    --danger-bg: #FBE8E7;
+    --font-heading: "Bricolage Grotesque", "Segoe UI", sans-serif;
+    --font-body: "Instrument Sans", "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", Consolas, monospace;
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
     --space-4: 16px;
     --space-5: 24px;
     --space-6: 32px;
-    --radius-small: 8px;
-    --radius-large: 12px;
-    --shadow-soft: 0 2px 10px rgba(11, 60, 93, 0.1);
+    --space-7: 48px;
+    --radius-small: 10px;
+    --radius-medium: 18px;
+    --radius-large: 28px;
+    --radius-pill: 999px;
+    --shadow-soft: 0 8px 26px rgba(8, 44, 69, 0.08);
+    --shadow-raised: 0 18px 44px rgba(8, 44, 69, 0.15);
+    --duration-fast: 150ms;
+    --duration-normal: 240ms;
+    --duration-slow: 420ms;
+    --ease-water: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-quiet: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+:root[data-theme="night"] {
+    color-scheme: dark;
+    --color-primary: #87CDE1;
+    --color-deep: #061E30;
+    --color-secondary: #57B5CD;
+    --color-surface: #173B4C;
+    --color-foam: #133242;
+    --color-page: #0B2635;
+    --color-card: #102F40;
+    --color-accent: #FFC56A;
+    --color-ink: #F2F8FA;
+    --color-muted: #C0D4DC;
+    --color-border: #31596A;
+    --success-text: #A7E4B8;
+    --success-bg: #153D32;
+    --warning-text: #FFD28B;
+    --warning-bg: #49391F;
+    --danger-text: #FFB4AE;
+    --danger-bg: #492C32;
+    --shadow-soft: 0 8px 26px rgba(0, 0, 0, 0.2);
+    --shadow-raised: 0 18px 44px rgba(0, 0, 0, 0.3);
 }
 
 * {
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+    scrollbar-color: var(--color-secondary) var(--color-surface);
+    scrollbar-width: thin;
+}
+
 body {
+    margin: 0;
     background: var(--color-page);
     color: var(--color-ink);
-    font-family: var(--font-stack);
+    font-family: var(--font-body);
     font-size: 16px;
-    line-height: 1.5;
-    margin: 0;
+    line-height: 1.55;
+    text-rendering: optimizeLegibility;
+}
+
+*::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+
+*::-webkit-scrollbar-track {
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+}
+
+*::-webkit-scrollbar-thumb {
+    border: 2px solid var(--color-surface);
+    border-radius: var(--radius-pill);
+    background: var(--color-secondary);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+}
+
+h1,
+h2,
+h3,
+p {
+    margin-top: 0;
 }
 
 h1,
 h2,
 h3 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    letter-spacing: -0.035em;
+}
+
+a {
     color: var(--color-primary);
-    line-height: 1.25;
 }
 
-h1 {
-    font-size: 28px;
-}
-
-h2 {
-    font-size: 22px;
-}
-
-h3 {
-    font-size: 18px;
-}
-
-a:focus,
-button:focus,
-input:focus,
-select:focus {
-    outline: 3px solid var(--color-secondary);
-    outline-offset: 2px;
+button,
+input,
+select,
+summary {
+    color: inherit;
+    font: inherit;
 }
 
 button,
@@ -76,38 +164,84 @@ button {
     border: 0;
     border-radius: var(--radius-small);
     cursor: pointer;
-    font: inherit;
-    padding: var(--space-2) var(--space-4);
-}
-
-button:hover {
-    filter: brightness(0.95);
 }
 
 button:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
+    cursor: wait;
 }
 
 input,
 select {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-small);
+    background: var(--color-card);
     color: var(--color-ink);
-    font: inherit;
-    padding: var(--space-2) var(--space-3);
-    width: 100%;
 }
 
-a {
-    color: var(--color-primary);
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+    outline: 3px solid var(--color-secondary);
+    outline-offset: 3px;
+}
+
+::selection {
+    background: var(--color-secondary);
+    color: #FFFFFF;
+}
+
+.icon {
+    display: block;
+    flex: 0 0 auto;
+    height: 1.15em;
+    width: 1.15em;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.skip-link {
+    position: fixed;
+    z-index: 100;
+    top: 10px;
+    left: 10px;
+    transform: translateY(-160%);
+    padding: 10px 16px;
+    border-radius: var(--radius-small);
+    background: var(--color-accent);
+    color: #1F2A33;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.skip-link:focus {
+    transform: translateY(0);
 }
 
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
     *::after {
-        scroll-behavior: auto;
-        transition: none;
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
