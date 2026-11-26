@@ -1,10 +1,10 @@
-// This file handles camp supplies.
-
 const supplyCamp = document.getElementById("supply-camp");
 const supplyList = document.getElementById("supply-list");
+const supplyNodes = document.getElementById("supply-nodes");
 const supplyMessage = document.getElementById("supply-message");
 const addSupplyForm = document.getElementById("add-supply-form");
 const issueSupplyForm = document.getElementById("issue-supply-form");
+
 
 function addSupplyCell(row, value) {
     const cell = document.createElement("td");
@@ -12,17 +12,60 @@ function addSupplyCell(row, value) {
     row.appendChild(cell);
 }
 
+
 function showSupplies(supplies) {
     supplyList.textContent = "";
-    for (const batch of supplies) {
+    supplyNodes.textContent = "";
+    if (supplies.length === 0) {
+        const empty = document.createElement("div");
+        const title = document.createElement("h4");
+        const copy = document.createElement("p");
+        empty.className = "empty-state";
+        title.textContent = "No supply batches at this camp";
+        copy.textContent = "Add a batch to build the camp's expiry chain.";
+        empty.appendChild(makeIcon("package-open"));
+        empty.appendChild(title);
+        empty.appendChild(copy);
+        supplyNodes.appendChild(empty);
+        return;
+    }
+
+    for (let index = 0; index < supplies.length; index += 1) {
+        const batch = supplies[index];
         const row = document.createElement("tr");
         addSupplyCell(row, batch.batch_id);
         addSupplyCell(row, batch.item_name);
         addSupplyCell(row, batch.quantity);
         addSupplyCell(row, batch.expiry_days);
         supplyList.appendChild(row);
+
+        const node = document.createElement("article");
+        const item = document.createElement("h4");
+        const quantity = document.createElement("p");
+        const expiry = document.createElement("p");
+        node.className = "supply-node";
+        if (index === 0) {
+            node.classList.add("is-head");
+            const head = document.createElement("span");
+            head.className = "node-head-label";
+            head.textContent = "Issues first";
+            node.appendChild(head);
+        }
+        item.textContent = batch.item_name;
+        quantity.textContent = "Quantity " + Number(batch.quantity).toLocaleString();
+        expiry.textContent = "Expires in " + batch.expiry_days + " days";
+        node.appendChild(item);
+        node.appendChild(quantity);
+        node.appendChild(expiry);
+        supplyNodes.appendChild(node);
     }
+    const nullEnd = document.createElement("span");
+    nullEnd.className = "supply-null";
+    nullEnd.textContent = "NULL";
+    supplyNodes.appendChild(nullEnd);
+    animateEntrance(supplyNodes, ".supply-node");
 }
+
 
 async function loadCampSupplies() {
     if (!supplyCamp.value) {
@@ -34,6 +77,7 @@ async function loadCampSupplies() {
         }
         return;
     }
+    showTableSkeleton(supplyList, 3, 4);
     try {
         const response = await fetch(
             "/api/camps/" + supplyCamp.value + "/supplies"
@@ -51,6 +95,7 @@ async function loadCampSupplies() {
     }
 }
 
+
 async function refreshCampSelect() {
     try {
         await fillCampSelect(supplyCamp);
@@ -64,6 +109,7 @@ async function refreshCampSelect() {
         showMessage(supplyMessage, "Could not load camps", true);
     }
 }
+
 
 addSupplyForm.addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -91,11 +137,13 @@ addSupplyForm.addEventListener("submit", async function (event) {
             if (typeof loadUndoHistory === "function") {
                 await loadUndoHistory();
             }
+            refreshOverview();
         }
     } catch (error) {
         showMessage(supplyMessage, "Could not add supply", true);
     }
 });
+
 
 issueSupplyForm.addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -127,6 +175,7 @@ issueSupplyForm.addEventListener("submit", async function (event) {
         showMessage(supplyMessage, "Could not issue supplies", true);
     }
 });
+
 
 supplyCamp.addEventListener("change", loadCampSupplies);
 refreshCampSelect();
