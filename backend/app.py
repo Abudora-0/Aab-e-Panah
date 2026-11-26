@@ -39,6 +39,27 @@ undo_service = UndoService(undo_manager, audit_logger)
 supply_service = SupplyService(undo_manager, audit_logger)
 
 
+def api_error_response(error):
+    if not request.path.startswith("/api/"):
+        return error
+    return jsonify({"error": error.name}), error.code
+
+
+@app.errorhandler(404)
+def handle_not_found(error):
+    return api_error_response(error)
+
+
+@app.errorhandler(405)
+def handle_method_not_allowed(error):
+    return api_error_response(error)
+
+
+@app.errorhandler(500)
+def handle_internal_server_error(error):
+    return api_error_response(error)
+
+
 def camp_to_dict(camp):
     return {
         "camp_id": camp.camp_id,
@@ -160,16 +181,22 @@ def add_camp():
     else:
         try:
             capacity = int(capacity_value)
-            capacity_is_valid = capacity == capacity_value and capacity > 0
-        except (TypeError, ValueError):
+            capacity_is_valid = (
+                capacity == capacity_value and 1 <= capacity <= 100000
+            )
+        except (TypeError, ValueError, OverflowError):
             capacity_is_valid = False
 
     if not capacity_is_valid:
-        reason = "Capacity must be a whole number above 0"
+        reason = "Capacity must be a whole number from 1 to 100000"
         audit_logger.log_error("admin", ActionNames.ADD_CAMP, "camp", reason)
         return jsonify({"error": reason}), 400
 
     try:
+        if camp_repository.camp_exists_by_name_and_district(name, district):
+            reason = "A camp with this name and district already exists"
+            audit_logger.log_error("admin", ActionNames.ADD_CAMP, "camp", reason)
+            return jsonify({"error": reason}), 409
         camp_id, created_at = camp_repository.insert_camp(
             name,
             district,
@@ -188,8 +215,6 @@ def add_camp():
             "Camp added",
         )
     except mysql.connector.Error as error:
-        if connection is not None:
-            connection.rollback()
         logger.error("Could not add camp: %s", error)
         audit_logger.log_error(
             "admin",

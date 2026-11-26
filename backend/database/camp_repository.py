@@ -38,6 +38,29 @@ def insert_camp(name, district, capacity):
             connection.close()
 
 
+def camp_exists_by_name_and_district(name, district):
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT camp_id FROM camps "
+            "WHERE LOWER(name) = LOWER(%s) "
+            "AND LOWER(district) = LOWER(%s) LIMIT 1",
+            (name, district),
+        )
+        return cursor.fetchone() is not None
+    except mysql.connector.Error as error:
+        logger.error("Could not check for duplicate camp: %s", error)
+        raise
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
+
 def load_camp(camp_id):
     connection = None
     cursor = None

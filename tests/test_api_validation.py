@@ -1,7 +1,7 @@
 import os
 import sys
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 PROJECT_FOLDER = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_FOLDER))
@@ -10,9 +10,21 @@ sys.path.insert(0, str(PROJECT_FOLDER))
 os.environ["AUDIT_LOG_FILE"] = str(PROJECT_FOLDER / "logs" / "test_api_audit.log")
 
 from backend.app import app
+from backend.database import camp_repository
 
 
 failures = 0
+
+
+def raise_api_error():
+    raise RuntimeError("test error")
+
+
+app.add_url_rule(
+    "/api/test-server-error",
+    "test_api_server_error",
+    raise_api_error,
+)
 
 
 def check(label, condition):
@@ -121,6 +133,76 @@ def main():
     )
     check("zero capacity refused", response.status_code == 400)
     response = client.post(
+        "/api/camps",
+        json={"name": "Camp", "district": "D", "capacity": 100001},
+    )
+    check("capacity above maximum refused", response.status_code == 400)
+    check(
+        "capacity above maximum has exact message",
+        response.json["error"]
+        == "Capacity must be a whole number from 1 to 100000",
+    )
+    response = client.post(
+        "/api/camps",
+        json={"name": "Camp", "district": "D", "capacity": 99999999999},
+    )
+    check("very large capacity refused", response.status_code == 400)
+    with patch(
+        "backend.app.camp_repository.camp_exists_by_name_and_district",
+        return_value=False,
+    ), patch(
+        "backend.app.camp_repository.insert_camp",
+        return_value=(1, "2026-01-01 00:00:00"),
+    ), patch("backend.app.undo_manager.record_action"), patch(
+        "backend.app.audit_logger.log_action"
+    ):
+        response = client.post(
+            "/api/camps",
+            json={"name": "Capacity limit", "district": "D", "capacity": 100000},
+        )
+        check("maximum capacity is accepted", response.status_code == 201)
+        check("maximum capacity is returned", response.json["capacity"] == 100000)
+    with patch(
+        "backend.app.camp_repository.camp_exists_by_name_and_district",
+        return_value=True,
+    ) as camp_exists, patch(
+        "backend.app.camp_repository.insert_camp"
+    ) as insert_camp:
+        response = client.post(
+            "/api/camps",
+            json={"name": "cAMP", "district": "d", "capacity": 1},
+        )
+        check("duplicate camp refused", response.status_code == 409)
+        check(
+            "duplicate camp has exact message",
+            response.json["error"]
+            == "A camp with this name and district already exists",
+        )
+        check(
+            "duplicate camp check uses submitted name and district",
+            camp_exists.call_args.args == ("cAMP", "d"),
+        )
+        check("duplicate camp is not inserted", not insert_camp.called)
+    fake_connection = Mock()
+    fake_cursor = Mock()
+    fake_cursor.fetchone.return_value = None
+    fake_connection.cursor.return_value = fake_cursor
+    with patch(
+        "backend.database.camp_repository.get_connection",
+        return_value=fake_connection,
+    ):
+        exists = camp_repository.camp_exists_by_name_and_district("Camp", "D")
+        query = fake_cursor.execute.call_args.args[0]
+        parameters = fake_cursor.execute.call_args.args[1]
+        check("duplicate lookup returns no match", not exists)
+        check("duplicate lookup uses one query", fake_cursor.execute.call_count == 1)
+        check(
+            "duplicate lookup uses case-insensitive SQL and placeholders",
+            "LOWER(name) = LOWER(%s)" in query
+            and "LOWER(district) = LOWER(%s)" in query
+            and parameters == ("Camp", "D"),
+        )
+    response = client.post(
         "/api/requests",
         json=dict(request_base, severity=6),
     )
@@ -219,6 +301,19 @@ def main():
     check("audit unknown action refused", response.status_code == 400)
     response = client.get("/api/audit?result=UNKNOWN")
     check("audit unknown result refused", response.status_code == 400)
+    response = client.get("/api/not-found")
+    check("API 404 uses JSON", response.status_code == 404
+          and response.is_json and "error" in response.json)
+    response = client.post("/api/health")
+    check("API 405 uses JSON", response.status_code == 405
+          and response.is_json and "error" in response.json)
+    response = client.get("/not-found")
+    check("non-API 404 keeps HTML", response.status_code == 404
+          and not response.is_json)
+
+    response = client.get("/api/test-server-error")
+    check("API 500 uses JSON", response.status_code == 500
+          and response.is_json and "error" in response.json)
 
     if failures == 0:
         print("ALL PASS")
