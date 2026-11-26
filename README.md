@@ -9,6 +9,8 @@ It helps organize flood relief resources, evacuation plans, and coordination wor
 - Backend: Python, OOP, and Flask
 - Database: MySQL
 
+The web UI uses GSAP with ScrollTrigger for lightweight motion, the Lucide static SVG sprite for icons, and self-hosted Bricolage Grotesque, Instrument Sans, and JetBrains Mono fonts. Their runtime files are stored in `frontend/vendor/` and served locally, so the interface does not depend on a CDN.
+
 ## First time setup
 
 1. Create and activate the virtual environment:

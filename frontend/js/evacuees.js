@@ -10,6 +10,7 @@ async function refreshEvacueeCamp() {
             showMessage(evacueeMessage, "No camps are available", true);
         } else {
             showMessage(evacueeMessage, "", false);
+            refreshOverview();
         }
     } catch (error) {
         showMessage(evacueeMessage, "Could not load camps", true);
@@ -38,6 +39,7 @@ async function changeOccupancy(path, inputId) {
             await loadCamps();
             await refreshEvacueeCamp();
             await refreshCampSelect();
+            refreshOverview();
             if (typeof loadAuditEntries === "function") {
                 await loadAuditEntries();
             }
@@ -63,4 +65,5 @@ document.getElementById("departure-form").addEventListener(
     }
 );
 
+evacueeCamp.addEventListener("change", refreshOverview);
 refreshEvacueeCamp();
