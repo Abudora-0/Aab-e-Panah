@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0B3C5D">
-    <title>Aab-e-Panah Flood Relief Coordination</title>
+    <meta name="description" content="Aab-e-Panah flood relief operations room">
+    <title>Aab-e-Panah | Rising Water Operations</title>
     <link rel="icon" href="assets/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
@@ -14,220 +15,509 @@
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <main>
-        <header class="site-header">
-            <img class="logo-slot" src="assets/logo-full.png" width="190" height="72" alt="Aab-e-Panah logo">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="page-progress" aria-hidden="true"><span id="scroll-progress"></span></div>
+
+    <header class="site-header" id="site-header">
+        <svg class="hero-wave hero-wave-back" viewBox="0 0 1440 140" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 64C190 102 340 30 560 59s313 81 505 41 240-48 375-17v57H0z"></path>
+        </svg>
+        <svg class="hero-wave hero-wave-middle" viewBox="0 0 1440 140" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 82c194-41 319 36 508 26s294-64 489-35 284 47 443 19v48H0z"></path>
+        </svg>
+        <svg class="hero-wave hero-wave-front" viewBox="0 0 1440 140" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 93c176 35 360-28 560-20s297 51 480 28 271-40 400-12v51H0z"></path>
+        </svg>
+        <div class="header-inner">
+            <a class="brand" href="#overview" aria-label="Aab-e-Panah home">
+                <img class="logo-slot" src="assets/logo-full-white.png" width="190" height="72" alt="Aab-e-Panah">
+            </a>
             <div class="header-title">
-                <h1 class="visually-hidden">Aab-e-Panah</h1>
-                <p class="site-subtitle">Flood Relief and Evacuation Coordination System</p>
+                <h1>Aab-e-Panah</h1>
+                <p class="site-subtitle">Flood relief operations room</p>
             </div>
-            <p id="status" class="chip chip-info status-chip">Checking database...</p>
-        </header>
-
-        <nav class="nav-row" aria-label="Page sections">
-            <a href="#camps">Camps</a>
-            <a href="#supplies">Supplies</a>
-            <a href="#evacuees">Evacuees</a>
-            <a href="#undo">Undo</a>
-            <a href="#audit-log">Audit Log</a>
-            <a href="#aid-requests">Aid Requests</a>
-        </nav>
-
-        <section id="camps">
-            <h2>Camps</h2>
-            <form id="camp-form">
-                <div class="field">
-                    <label for="camp-name">Camp name</label>
-                    <input id="camp-name" name="name" type="text" maxlength="100" required>
-                </div>
-                <div class="field">
-                    <label for="district">District</label>
-                    <input id="district" name="district" type="text" maxlength="100" required>
-                </div>
-                <div class="field">
-                    <label for="capacity">Capacity</label>
-                    <input id="capacity" name="capacity" type="number" min="1" step="1" required>
-                </div>
-                <button class="primary-action" type="submit">Add Camp</button>
-            </form>
-            <p id="message" class="message"></p>
-            <div class="control-bar">
-                <label for="camp-sort">Sort by</label>
-                <select id="camp-sort">
-                    <option value="name">Name</option>
-                    <option value="capacity">Capacity</option>
-                    <option value="free_space">Free space</option>
-                </select>
-                <select id="camp-order">
-                    <option value="asc">Ascending</option>
-                    <option value="desc">Descending</option>
-                </select>
-                <select id="camp-algorithm">
-                    <option value="merge">Merge sort</option>
-                    <option value="quick">Quick sort</option>
-                </select>
-                <button class="secondary-action" id="sort-camps" type="button">Sort</button>
-                <button class="secondary-action" id="reset-camps" type="button">Reset</button>
+            <div class="header-actions">
+                <p id="status" class="status-chip" role="status">
+                    <span class="status-beacon" aria-hidden="true"></span>
+                    <span>Checking database...</span>
+                </p>
+                <button class="night-toggle" id="night-toggle" type="button" aria-pressed="false">
+                    <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#moon"></use></svg>
+                    <span>Night operations</span>
+                </button>
             </div>
-            <p id="camp-sort-message" class="message"></p>
-            <div class="table-wrap">
+        </div>
+    </header>
+
+    <nav class="depth-nav" aria-label="Operations sections">
+        <span class="depth-water" aria-hidden="true"></span>
+        <a href="#overview" aria-label="At a glance" aria-current="location">
+            <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#chart-no-axes-column-increasing"></use></svg>
+            <span>Overview</span>
+        </a>
+        <a href="#camps" aria-label="Camps">
+            <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#tent-tree"></use></svg>
+            <span>Camps</span>
+        </a>
+        <a href="#aid-requests" aria-label="Aid requests">
+            <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#tickets"></use></svg>
+            <span>Queue</span>
+        </a>
+        <a href="#supplies" aria-label="Supplies">
+            <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#package-check"></use></svg>
+            <span>Supplies</span>
+        </a>
+        <a href="#evacuees" aria-label="Evacuees">
+            <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#users-round"></use></svg>
+            <span>People</span>
+        </a>
+        <a href="#undo" aria-label="Undo history">
+            <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#layers"></use></svg>
+            <span>Undo</span>
+        </a>
+        <a href="#audit-log" aria-label="Audit log">
+            <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#scan-eye"></use></svg>
+            <span>Recorder</span>
+        </a>
+    </nav>
+
+    <main id="main-content">
+        <section id="overview" class="overview-section reveal-section" aria-labelledby="overview-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Live field picture</p>
+                    <h2 id="overview-title">At a glance</h2>
+                </div>
+                <span class="live-label"><span class="live-dot" aria-hidden="true"></span>Live operations</span>
+            </div>
+            <div class="overview-grid">
+                <article class="metric-card metric-camps">
+                    <span class="metric-icon"><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#tent-tree"></use></svg></span>
+                    <p>Total camps</p>
+                    <strong id="overview-camps" class="metric-value">0</strong>
+                    <span class="metric-note">relief sites active</span>
+                </article>
+                <article class="metric-card metric-sheltered">
+                    <span class="metric-icon"><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#house"></use></svg></span>
+                    <p>People sheltered</p>
+                    <strong id="overview-people" class="metric-value">0</strong>
+                    <span class="metric-note">currently accommodated</span>
+                </article>
+                <article class="metric-card metric-free">
+                    <span class="metric-icon"><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#life-buoy"></use></svg></span>
+                    <p>Free places</p>
+                    <strong id="overview-free" class="metric-value">0</strong>
+                    <span class="metric-note">capacity remaining</span>
+                </article>
+                <article class="metric-card metric-waiting">
+                    <span class="metric-icon"><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#bell-ring"></use></svg></span>
+                    <p>Waiting requests</p>
+                    <strong id="overview-waiting" class="metric-value">0</strong>
+                    <span class="metric-note">aid calls in queue</span>
+                </article>
+                <article class="occupancy-card" aria-label="Overall camp occupancy">
+                    <div class="occupancy-gauge" id="occupancy-gauge" role="img" aria-label="0 percent occupancy">
+                        <div class="gauge-center">
+                            <strong id="overview-occupancy">0%</strong>
+                            <span>occupied</span>
+                        </div>
+                    </div>
+                    <div class="gauge-copy">
+                        <p class="eyebrow">Waterline</p>
+                        <h3>Network occupancy</h3>
+                        <p id="occupancy-summary">Shelter capacity across all active camps.</p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section id="camps" class="reveal-section" aria-labelledby="camps-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Safe ground</p>
+                    <h2 id="camps-title">Relief camps</h2>
+                    <p class="section-intro">Track shelter levels and find the next camp with room to help.</p>
+                </div>
+                <button class="primary-action add-camp-trigger" type="button" data-open-camp-form>
+                    <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#plus"></use></svg>
+                    <span>Add a camp</span>
+                </button>
+            </div>
+            <p id="message" class="message" aria-live="polite"></p>
+            <div class="section-tools">
+                <div class="control-bar" aria-label="Camp sorting">
+                    <label for="camp-sort">Sort by</label>
+                    <select id="camp-sort">
+                        <option value="name">Name</option>
+                        <option value="capacity">Capacity</option>
+                        <option value="free_space">Free space</option>
+                    </select>
+                    <select id="camp-order" aria-label="Sort order">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                    <select id="camp-algorithm" aria-label="Sorting algorithm">
+                        <option value="merge">Merge sort</option>
+                        <option value="quick">Quick sort</option>
+                    </select>
+                    <button class="secondary-action" id="sort-camps" type="button">
+                        <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#arrow-down-wide-narrow"></use></svg>
+                        <span>Sort camps</span>
+                    </button>
+                    <button class="quiet-action" id="reset-camps" type="button">Reset</button>
+                </div>
+                <div class="view-toggle" role="group" aria-label="Camp display">
+                    <button type="button" id="camp-view-cards" class="view-button is-selected" aria-pressed="true">Cards</button>
+                    <button type="button" id="camp-view-table" class="view-button" aria-pressed="false">Table</button>
+                </div>
+            </div>
+            <p id="camp-sort-message" class="message" aria-live="polite"></p>
+            <div id="camp-cards" class="camp-grid" aria-live="polite"></div>
+            <div class="table-wrap camp-table-panel" id="camp-table-panel" hidden>
                 <table>
+                    <caption class="visually-hidden">Camps and current occupancy</caption>
                     <thead><tr><th>Name</th><th>District</th><th>Capacity</th><th>Current occupancy</th><th>Free space</th></tr></thead>
                     <tbody id="camp-list"></tbody>
                 </table>
             </div>
-            <form id="free-space-form">
-                <div class="field">
-                    <label for="minimum-free-space">Find a camp with at least N free places</label>
-                    <input id="minimum-free-space" type="number" min="1" required>
-                </div>
-                <button class="secondary-action" type="submit">Find camp</button>
-            </form>
-            <form id="camp-name-search-form">
-                <div class="field">
-                    <label for="camp-name-search">Find a camp by name</label>
-                    <input id="camp-name-search" type="text" required>
-                </div>
-                <button class="secondary-action" type="submit">Find camp</button>
-            </form>
-            <p id="camp-find-message" class="message"></p>
+            <div class="camp-search-grid">
+                <form id="free-space-form" class="search-panel">
+                    <div class="field">
+                        <input id="minimum-free-space" type="number" min="1" placeholder=" " required>
+                        <label for="minimum-free-space">Minimum free places</label>
+                    </div>
+                    <button class="secondary-action" type="submit"><span>Find available camp</span><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#search"></use></svg></button>
+                </form>
+                <form id="camp-name-search-form" class="search-panel">
+                    <div class="field">
+                        <input id="camp-name-search" type="text" placeholder=" " required>
+                        <label for="camp-name-search">Camp name</label>
+                    </div>
+                    <button class="secondary-action" type="submit"><span>Find by name</span><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#search"></use></svg></button>
+                </form>
+            </div>
+            <p id="camp-find-message" class="message" aria-live="polite"></p>
         </section>
 
-        <section id="supplies">
-            <h2>Supplies</h2>
-            <div class="field camp-picker">
-                <label for="supply-camp">Camp</label>
-                <select id="supply-camp"></select>
+        <section id="aid-requests" class="reveal-section" aria-labelledby="requests-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Dispatch channel</p>
+                    <h2 id="requests-title">Aid request queue</h2>
+                    <p class="section-intro">Arrival order drives service. Severity ranking is shown separately.</p>
+                </div>
+                <button class="primary-action" id="serve-request" type="button">
+                    <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#send"></use></svg>
+                    <span>Serve next</span>
+                </button>
             </div>
-            <p id="supply-message" class="message"></p>
-            <div class="table-wrap">
+            <form id="request-form" class="request-entry">
+                <div class="field">
+                    <input id="area-name" name="area_name" type="text" maxlength="100" placeholder=" " required>
+                    <label for="area-name">Area name</label>
+                </div>
+                <div class="field">
+                    <input id="needs" name="needs" type="text" maxlength="255" placeholder=" " required>
+                    <label for="needs">Needs</label>
+                </div>
+                <div class="field">
+                    <label class="select-label" for="severity">Severity</label>
+                    <select id="severity" name="severity">
+                        <option value="1">1 · Routine</option>
+                        <option value="2">2 · Low</option>
+                        <option value="3">3 · Moderate</option>
+                        <option value="4">4 · High</option>
+                        <option value="5">5 · Critical</option>
+                    </select>
+                </div>
+                <button class="primary-action" type="submit">
+                    <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#circle-plus"></use></svg>
+                    <span>Log request</span>
+                </button>
+            </form>
+            <p id="request-message" class="message" aria-live="polite"></p>
+            <div class="request-panel">
+                <div class="subsection-heading">
+                    <div><p class="eyebrow">First in, first served</p><h3>Waiting lane</h3></div>
+                    <span class="queue-count" id="queue-count">0 in queue</span>
+                </div>
+                <div class="request-lane" id="request-lane" aria-live="polite"></div>
+                <div class="empty-state" id="waiting-empty" hidden></div>
+                <details class="data-details">
+                    <summary>Accessible waiting list</summary>
+                    <div class="table-wrap">
+                        <table>
+                            <caption class="visually-hidden">Aid requests in arrival order</caption>
+                            <thead><tr><th>Position</th><th>Area</th><th>Needs</th><th>Severity</th><th>Status</th><th>Time</th></tr></thead>
+                            <tbody id="request-list"></tbody>
+                        </table>
+                    </div>
+                </details>
+            </div>
+            <div class="request-panel urgent-panel">
+                <div class="subsection-heading">
+                    <div><p class="eyebrow">Counting sort</p><h3>Most urgent first</h3></div>
+                    <span class="section-note">Severity 5 down to 1</span>
+                </div>
+                <div id="urgent-buckets" class="urgent-buckets"></div>
+                <details class="data-details">
+                    <summary>Accessible severity ranking</summary>
+                    <div class="table-wrap">
+                        <table>
+                            <caption class="visually-hidden">Aid requests ranked by severity</caption>
+                            <thead><tr><th>Rank</th><th>Area</th><th>Needs</th><th>Severity</th><th>Status</th></tr></thead>
+                            <tbody id="ranked-request-list"></tbody>
+                        </table>
+                    </div>
+                </details>
+            </div>
+            <div class="request-panel served-panel">
+                <div class="subsection-heading">
+                    <div><p class="eyebrow">Dispatch record</p><h3>Recently served</h3></div>
+                </div>
+                <div class="served-timeline" id="served-timeline"></div>
+                <details class="data-details">
+                    <summary>Accessible served request list</summary>
+                    <div class="table-wrap">
+                        <table>
+                            <caption class="visually-hidden">Recently served requests</caption>
+                            <thead><tr><th>Area</th><th>Needs</th><th>Severity</th><th>Status</th><th>Served time</th></tr></thead>
+                            <tbody id="served-list"></tbody>
+                        </table>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <section id="supplies" class="reveal-section" aria-labelledby="supplies-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Relief stock</p>
+                    <h2 id="supplies-title">Supply chain</h2>
+                    <p class="section-intro">Perishable batches are linked in soonest-expiry order.</p>
+                </div>
+                <div class="field camp-picker">
+                    <label class="select-label" for="supply-camp">Camp</label>
+                    <select id="supply-camp"></select>
+                </div>
+            </div>
+            <p id="supply-message" class="message" aria-live="polite"></p>
+            <div class="supply-list-heading">
+                <span class="list-marker">HEAD</span>
+                <span>Soonest expiry first</span>
+            </div>
+            <div id="supply-nodes" class="supply-chain" aria-live="polite"></div>
+            <div class="view-toggle supply-toggle" role="group" aria-label="Supply details display">
+                <button type="button" id="supply-view-nodes" class="view-button is-selected" aria-pressed="true">Linked chain</button>
+                <button type="button" id="supply-view-table" class="view-button" aria-pressed="false">Details table</button>
+            </div>
+            <div class="table-wrap supply-table-panel" id="supply-table-panel" hidden>
                 <table>
+                    <caption class="visually-hidden">Supply batch details</caption>
                     <thead><tr><th>Batch id</th><th>Item</th><th>Quantity</th><th>Expiry days</th></tr></thead>
                     <tbody id="supply-list"></tbody>
                 </table>
             </div>
-            <form id="add-supply-form">
-                <div class="field">
-                    <label for="supply-item">Item</label>
-                    <input id="supply-item" maxlength="100" required>
-                </div>
-                <div class="field">
-                    <label for="supply-quantity">Quantity</label>
-                    <input id="supply-quantity" type="number" min="1" max="100000" required>
-                </div>
-                <div class="field">
-                    <label for="supply-expiry">Expiry days</label>
-                    <input id="supply-expiry" type="number" min="0" max="3650" required>
-                </div>
-                <button class="primary-action" type="submit">Add supply batch</button>
-            </form>
-            <form id="issue-supply-form">
-                <div class="field">
-                    <label for="issue-item">Item to issue</label>
-                    <input id="issue-item" maxlength="100" required>
-                </div>
-                <div class="field">
-                    <label for="issue-amount">Amount</label>
-                    <input id="issue-amount" type="number" min="1" max="100000" required>
-                </div>
-                <button class="secondary-action" type="submit">Issue supplies</button>
-            </form>
-        </section>
-
-        <section id="evacuees">
-            <h2>Evacuees</h2>
-            <div class="field camp-picker">
-                <label for="evacuee-camp">Camp</label>
-                <select id="evacuee-camp"></select>
+            <div class="form-pair">
+                <form id="add-supply-form" class="form-panel">
+                    <h3><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#package-plus"></use></svg>Receive stock</h3>
+                    <div class="field">
+                        <input id="supply-item" maxlength="100" placeholder=" " required>
+                        <label for="supply-item">Item</label>
+                    </div>
+                    <div class="field">
+                        <input id="supply-quantity" type="number" min="1" max="100000" placeholder=" " required>
+                        <label for="supply-quantity">Quantity</label>
+                    </div>
+                    <div class="field">
+                        <input id="supply-expiry" type="number" min="0" max="3650" placeholder=" " required>
+                        <label for="supply-expiry">Expiry days</label>
+                    </div>
+                    <button class="primary-action" type="submit"><span>Add batch</span></button>
+                </form>
+                <form id="issue-supply-form" class="form-panel">
+                    <h3><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#package-open"></use></svg>Issue stock</h3>
+                    <div class="field">
+                        <input id="issue-item" maxlength="100" placeholder=" " required>
+                        <label for="issue-item">Item to issue</label>
+                    </div>
+                    <div class="field">
+                        <input id="issue-amount" type="number" min="1" max="100000" placeholder=" " required>
+                        <label for="issue-amount">Amount</label>
+                    </div>
+                    <button class="secondary-action" type="submit"><span>Issue soonest batch</span></button>
+                </form>
             </div>
-            <form id="arrival-form">
-                <div class="field">
-                    <label for="arrival-people">People arriving</label>
-                    <input id="arrival-people" type="number" min="1" max="100000" required>
-                </div>
-                <button class="primary-action" type="submit">Register arrival</button>
-            </form>
-            <form id="departure-form">
-                <div class="field">
-                    <label for="departure-people">People departing</label>
-                    <input id="departure-people" type="number" min="1" max="100000" required>
-                </div>
-                <button class="secondary-action" type="submit">Register departure</button>
-            </form>
-            <p id="evacuee-message" class="message"></p>
         </section>
 
-        <section id="undo">
-            <h2>Undo</h2>
-            <button class="primary-action" id="undo-button" type="button">Undo last action</button>
-            <p id="undo-message" class="message"></p>
-            <ul id="undo-list"></ul>
+        <section id="evacuees" class="reveal-section" aria-labelledby="evacuees-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">People movement</p>
+                    <h2 id="evacuees-title">Evacuee register</h2>
+                    <p class="section-intro">Update arrivals and departures against a live camp waterline.</p>
+                </div>
+                <div class="field camp-picker">
+                    <label class="select-label" for="evacuee-camp">Camp</label>
+                    <select id="evacuee-camp"></select>
+                </div>
+            </div>
+            <p id="evacuee-message" class="message" aria-live="polite"></p>
+            <div class="evacuee-layout">
+                <div class="camp-tank-card" id="camp-tank-card">
+                    <div class="tank-gauge" id="camp-tank" role="img" aria-label="No camp selected">
+                        <span class="tank-water"></span>
+                        <span class="tank-percent" id="camp-tank-percent">0%</span>
+                    </div>
+                    <div>
+                        <p class="eyebrow">Selected site</p>
+                        <h3 id="camp-tank-name">Choose a camp</h3>
+                        <p id="camp-tank-copy">Occupancy updates after every movement.</p>
+                    </div>
+                </div>
+                <div class="form-pair movement-forms">
+                    <form id="arrival-form" class="form-panel movement-arrival">
+                        <h3><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#log-in"></use></svg>Register arrival</h3>
+                        <div class="field">
+                            <input id="arrival-people" type="number" min="1" max="100000" placeholder=" " required>
+                            <label for="arrival-people">People arriving</label>
+                        </div>
+                        <button class="primary-action" type="submit"><span>Check in people</span></button>
+                    </form>
+                    <form id="departure-form" class="form-panel movement-departure">
+                        <h3><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#log-out"></use></svg>Register departure</h3>
+                        <div class="field">
+                            <input id="departure-people" type="number" min="1" max="100000" placeholder=" " required>
+                            <label for="departure-people">People departing</label>
+                        </div>
+                        <button class="secondary-action" type="submit"><span>Check out people</span></button>
+                    </form>
+                </div>
+            </div>
         </section>
 
-        <section id="audit-log">
-            <h2>Audit Log</h2>
-            <div class="control-bar">
+        <section id="undo" class="reveal-section" aria-labelledby="undo-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Recovery tools</p>
+                    <h2 id="undo-title">Undo stack</h2>
+                    <p class="section-intro">The newest reversible operation sits at the top.</p>
+                </div>
+                <button class="secondary-action" id="undo-button" type="button">
+                    <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#undo-2"></use></svg>
+                    <span>Undo last action</span>
+                </button>
+            </div>
+            <p id="undo-message" class="message" aria-live="polite"></p>
+            <div class="undo-stack-frame">
+                <span class="stack-top-label">TOP</span>
+                <div id="undo-list" class="undo-stack" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <section id="audit-log" class="reveal-section recorder-section" aria-labelledby="audit-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Incident trace</p>
+                    <h2 id="audit-title">Black box recorder</h2>
+                    <p class="section-intro">A filterable feed of operational actions and outcomes.</p>
+                </div>
+                <button class="primary-action" id="audit-refresh" type="button">
+                    <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#refresh-cw"></use></svg>
+                    <span>Refresh log</span>
+                </button>
+            </div>
+            <div class="control-bar recorder-controls">
                 <label for="audit-result">Result</label>
-                <select id="audit-result"><option value="all">All</option><option value="SUCCESS">SUCCESS</option><option value="FAILED">FAILED</option></select>
+                <select id="audit-result"><option value="all">All results</option><option value="SUCCESS">Success</option><option value="FAILED">Failed</option></select>
                 <label for="audit-action">Action</label>
                 <select id="audit-action"></select>
                 <label for="audit-count">Entries</label>
                 <select id="audit-count"><option value="20">20</option><option value="50" selected>50</option><option value="100">100</option></select>
-                <button class="primary-action" id="audit-refresh" type="button">Refresh</button>
             </div>
-            <p id="audit-message" class="message"></p>
-            <div class="table-wrap">
+            <div class="filter-chips" id="audit-filter-chips" aria-label="Active audit filters"></div>
+            <p id="audit-message" class="message" aria-live="polite"></p>
+            <div class="table-wrap audit-table-wrap">
                 <table>
+                    <caption class="visually-hidden">Filtered audit log entries</caption>
                     <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th><th>Result</th><th>Details</th></tr></thead>
                     <tbody id="audit-list"></tbody>
                 </table>
             </div>
         </section>
-
-        <section id="aid-requests">
-            <h2>Aid Requests</h2>
-            <form id="request-form">
-                <div class="field">
-                    <label for="area-name">Area name</label>
-                    <input id="area-name" name="area_name" type="text" maxlength="100" required>
-                </div>
-                <div class="field">
-                    <label for="needs">Needs</label>
-                    <input id="needs" name="needs" type="text" maxlength="255" required>
-                </div>
-                <div class="field">
-                    <label for="severity">Severity</label>
-                    <select id="severity" name="severity"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
-                </div>
-                <button class="primary-action" type="submit">Add Request</button>
-            </form>
-            <button class="primary-action" id="serve-request" type="button">Serve next request</button>
-            <p id="request-message" class="message"></p>
-            <h3>Waiting requests</h3>
-            <div class="table-wrap">
-                <table>
-                    <thead><tr><th>Position</th><th>Area</th><th>Needs</th><th>Severity</th><th>Status</th><th>Time</th></tr></thead>
-                    <tbody id="request-list"></tbody>
-                </table>
-            </div>
-            <h3>Most urgent first</h3>
-            <p>Ranked by severity (counting sort). Serving still follows arrival order.</p>
-            <div class="table-wrap">
-                <table>
-                    <thead><tr><th>Rank</th><th>Area</th><th>Needs</th><th>Severity</th><th>Status</th></tr></thead>
-                    <tbody id="ranked-request-list"></tbody>
-                </table>
-            </div>
-            <h3>Recently served requests</h3>
-            <div class="table-wrap">
-                <table>
-                    <thead><tr><th>Area</th><th>Needs</th><th>Severity</th><th>Status</th><th>Served time</th></tr></thead>
-                    <tbody id="served-list"></tbody>
-                </table>
-            </div>
-        </section>
     </main>
+
+    <footer class="tide-footer">
+        <div class="footer-wave" aria-hidden="true"></div>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <img src="assets/logo-full.png" width="190" height="72" alt="Aab-e-Panah Urdu and English logo">
+                <div>
+                    <p class="footer-project">Aab-e-Panah</p>
+                    <p>Data Structures and Algorithms term project, Fall 2026, UET Lahore</p>
+                    <p>Instructor Sir Samyan Wahla</p>
+                    <p class="team-line">Team: Abdullah Akbar and Sarim Sajjad</p>
+                </div>
+            </div>
+            <div class="sdg-row" aria-label="United Nations Sustainable Development Goals">
+                <span class="sdg-chip sdg-13"><b>13</b><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#cloud-sun"></use></svg><span>Climate action</span></span>
+                <span class="sdg-chip sdg-11"><b>11</b><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#building-2"></use></svg><span>Sustainable cities</span></span>
+                <span class="sdg-chip sdg-3"><b>3</b><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#heart-pulse"></use></svg><span>Good health</span></span>
+                <span class="sdg-chip sdg-1"><b>1</b><svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#hand-coins"></use></svg><span>No poverty</span></span>
+            </div>
+            <div class="under-hood">
+                <div class="section-heading">
+                    <div><p class="eyebrow">Built for the course</p><h2>Under the hood</h2></div>
+                </div>
+                <div class="structure-grid">
+                    <article><span class="structure-mark">FIFO</span><h3>Queue</h3><p>Aid requests follow arrival order.</p></article>
+                    <article><span class="structure-mark">LIFO</span><h3>Stack</h3><p>Undo returns the newest action first.</p></article>
+                    <article><span class="structure-mark">HEAD → NULL</span><h3>Linked list</h3><p>Supply batches stay ordered by expiry.</p></article>
+                    <article><span class="structure-mark">O(n log n)</span><h3>Merge and quick sort</h3><p>Camp sorting supports both algorithms.</p></article>
+                    <article><span class="structure-mark">1 → 5</span><h3>Counting sort</h3><p>Request urgency is grouped by severity.</p></article>
+                    <article><span class="structure-mark">O(log n)</span><h3>Binary search</h3><p>Find a camp by name or free places.</p></article>
+                </div>
+            </div>
+            <p class="footer-note">Field picture updates from the existing camps and aid request services.</p>
+        </div>
+    </footer>
+    <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="false"></div>
+
+    <dialog class="camp-dialog" id="camp-dialog" aria-labelledby="camp-dialog-title">
+        <form id="camp-form" method="dialog" class="camp-form">
+            <div class="section-heading">
+                <div><p class="eyebrow">Expand safe ground</p><h2 id="camp-dialog-title">Register a camp</h2></div>
+                <button type="button" class="icon-button" data-close-camp-form aria-label="Close camp form">
+                    <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#x"></use></svg>
+                </button>
+            </div>
+            <div class="field">
+                <input id="camp-name" name="name" type="text" maxlength="100" placeholder=" " required>
+                <label for="camp-name">Camp name</label>
+            </div>
+            <div class="field">
+                <input id="district" name="district" type="text" maxlength="100" placeholder=" " required>
+                <label for="district">District</label>
+            </div>
+            <div class="field">
+                <input id="capacity" name="capacity" type="number" min="1" max="100000" step="1" placeholder=" " required>
+                <label for="capacity">Capacity, 1 to 100000</label>
+            </div>
+            <div class="dialog-actions">
+                <button class="quiet-action" type="button" data-close-camp-form>Cancel</button>
+                <button class="primary-action" type="submit">
+                    <svg class="icon" aria-hidden="true"><use href="/static/vendor/lucide/sprite.svg#plus"></use></svg>
+                    <span>Add camp</span>
+                </button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="/static/vendor/gsap/gsap.min.js"></script>
+    <script src="/static/vendor/gsap/ScrollTrigger.min.js"></script>
+    <script src="/static/js/icons.js"></script>
     <script src="/static/js/ui.js"></script>
+    <script src="/static/js/custom_select.js"></script>
     <script src="/static/js/camps.js"></script>
     <script src="/static/js/aid_requests.js"></script>
     <script src="/static/js/supplies.js"></script>
